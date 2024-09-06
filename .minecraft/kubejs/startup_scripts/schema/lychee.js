@@ -1,4 +1,5 @@
 // Carefully contain the radioactive matter and don't let any of this spill into the environment
+
 (function() {
     const $RecipeSchema = Java.loadClass("dev.latvian.mods.kubejs.recipe.schema.RecipeSchema");
     const commonProperties = []; // Set inside of the registry event
@@ -6,6 +7,7 @@
     /**
      * @description Add optional properties which are common to every recipe type
      * @param {object[]} specificProperties Properties specific for this recipe only (i.e. not any shared properties)
+     * @returns {object[]} specific + global properties
      */
     const applyCommonProperties = specificProperties => {
         return specificProperties.concat(commonProperties);
@@ -38,6 +40,10 @@
 
         const blockIn = Component("inputBlock").asArrayOrSelf();
         const blockInKey = blockIn.key("block_in");
+
+        commonProperties.push(
+            LycheePostActions.getAny(Component).key("post")
+        );
 
         register(event, "lychee:block_interacting", [itemInKey, blockInKey]);
     });
