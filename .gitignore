@@ -1,0 +1,21 @@
+
+# Hide unecessary things
+mmc-pack.json
+instance.cfg*
+.minecraft/mods
+.minecraft/config
+.minecraft/*.*
+.minecraft/logs
+.minecraft/saves
+.minecraft/coremods
+.minecraft/defaultconfigs
+.minecraft/local
+.minecraft/resourcepacks
+.minecraft/screenshots
+.minecraft/server-resource-packs
+.minecraft/shaderpacks
+.minecraft/texturepacks
+*.properties
+probejs.json
+.minecraft/kubejs/README.txt
+jsconfig.json
