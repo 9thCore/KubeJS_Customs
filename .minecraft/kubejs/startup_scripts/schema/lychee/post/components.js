@@ -98,11 +98,11 @@ const LycheePostActions = {};
         anyString = Component("anyString");
         const allPostActions = getAll(Component);
 
-        const noValidPostType = Component("anyString").mapIn(object => {
+        const noValidPostType = anyString.mapIn(object => {
             if (typeof object !== "object") {
                 console.SERVER.error(`A Post Action be an object!`);
             } else if ("type" in object) {
-                console.SERVER.error(`${object.type} is not a valid Post Action type. Must be one of ${listPossibleIDs(allPostActions)}`);
+                console.SERVER.error(`"${object.type}" is not a valid Post Action type. Must be one of ${listPossibleIDs(allPostActions)}`);
             } else {
                 console.SERVER.error(`A Post Action must have a type, one of ${listPossibleIDs(allPostActions)}`);
             }
