@@ -27,7 +27,7 @@
     DataFixers.item = (itemKey, countKey) => {
         return object => {
             if (!(itemKey in object)) {
-                console.error(`FATAL: No Item ID provided to ${itemKey}`);
+                console.SERVER.error(`FATAL: No Item ID provided to ${itemKey}`);
                 return null;
             }
 
@@ -38,7 +38,7 @@
                 // Post Action does not need fixing
                 return object;
             } else if (pass && countKey in object) {
-                console.warn(`Object has both a count: ${object[countKey]} and item with count: ${item}; discarding item count`);
+                console.SERVER.warn(`Object has both a count: ${object[countKey]} and item with count: ${item}; discarding item count`);
                 object[itemKey] = id;
                 return object;
             }
