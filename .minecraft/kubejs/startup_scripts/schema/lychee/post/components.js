@@ -21,18 +21,14 @@ const LycheePostActions = {};
     /**
      * 
      * @param {Internal.RecipeSchemaRegistryEventJS} id ID of the Post Action
-     * @param {Internal.RecipeComponent} possibleValues All possible values of keys in the Post Action (presumably obtained through an "or" chain)
      * @param {Function} validator Validator run on every component of the Post Action: first arg is key, second arg is value, return value is [passed: boolean, errorMessage: string]
      * @param {Function} dataFixer Fixer for the entire object, used for things like converting {item: "2x minecraft:stone"} to {item: "minecraft:stone", count: 2}
-     * @returns {{id: string, post: Internal.RecipeComponent}}
+     * @returns {{id: string, handler: Function}}
      */
-    const post = (id, possibleValues, validator, dataFixer) => {
+    const post = (id, validator, dataFixer) => {
         return {
             id: id,
-            post: possibleValues.asMap(anyString).mapIn(object => {
-                if (object.type !== id) {
-                    return null;
-                }
+            handler: object => {
                 for (let key in object) {
                     // Skip over the "type" key
                     if (key === "type") {
@@ -46,24 +42,19 @@ const LycheePostActions = {};
                 }
                 dataFixer.call(null, object);
                 return object;
-            })
+            }
         };
     }
 
     /**
      * 
-     * @param {Function} Component The Convenient Component Helper (TM)
      * @returns {Internal.RecipeComponent[]} List of all possible Post Actions
      */
-    const getAll = Component => {
+    const getAll = () => {
         const all = [];
-
-        const item = Component("registryObject", {registry: "minecraft:item"});
-        const count = Component("intNumber");
 
         all.push(post(
             "drop_item",
-            count.or(item).or(anyString),
             (key, value) => {
                 switch (key) {
                     case "item":
@@ -81,7 +72,6 @@ const LycheePostActions = {};
 
         all.push(post(
             "prevent_default",
-            anyString,
             LycheePostActions.Validators.alwaysTrue,
             LycheePostActions.DataFixers.none
         ));
@@ -96,9 +86,21 @@ const LycheePostActions = {};
      */
     const getAny = Component => {
         anyString = Component("anyString");
-        const allPostActions = getAll(Component);
+        const allPostActions = getAll();
 
-        const noValidPostType = anyString.mapIn(object => {
+        const item = Component("registryObject", {registry: "minecraft:item"});
+        const count = Component("intNumber");
+
+        const possibleValues = count.or(item).or(anyString);
+        const postAny = possibleValues.asMap(anyString).mapIn(object => {
+            for (const post of allPostActions) {
+                if (post.id === object.type) {
+                    // Found Post Action, do stuff
+                    return post.handler.call(null, object);
+                }
+            }
+
+            // No Post Action matched the type given, so error
             if (typeof object !== "object") {
                 console.SERVER.error(`A Post Action be an object!`);
             } else if ("type" in object) {
@@ -106,14 +108,9 @@ const LycheePostActions = {};
             } else {
                 console.SERVER.error(`A Post Action must have a type, one of ${listPossibleIDs(allPostActions)}`);
             }
+            
             return null;
         });
-
-        let postAny = allPostActions[0].post;
-        for (let i = 1; i < allPostActions.length; i++) {
-            postAny = postAny.or(allPostActions[i].post);
-        }
-        postAny = postAny.or(noValidPostType);
 
         return postAny.asArrayOrSelf();
     };
