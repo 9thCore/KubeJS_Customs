@@ -48,7 +48,8 @@
         const possibleValues = Builder([
             anyString.key("type"),
             item.key("item").defaultOptional(),
-            count.key("count").defaultOptional()
+            count.key("count").defaultOptional(),
+            LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
 
         const postAny = possibleValues.mapIn(object => {

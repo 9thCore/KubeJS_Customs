@@ -50,7 +50,8 @@
         const blockInKey = blockIn.key("block_in");
 
         commonProperties.push(
-            LycheeSchemaFunctionality.PostActions.getKey(Component, Builder)
+            LycheeSchemaFunctionality.PostActions.getKey(Component, Builder),
+            LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         );
 
         register(event, "lychee:block_interacting", [itemInKey, blockInKey]);

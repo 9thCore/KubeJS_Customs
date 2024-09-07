@@ -19,6 +19,18 @@
         `Key "${key}" must be of type ${type}, but is of type ${typeof value} instead`
     ];
 
+    /**
+     * @description A validator that passes if the given value is in the passed accepted values array
+     * @param {string} key 
+     * @param {object} value 
+     * @param {object[]} acceptedValues 
+     * @returns {[boolean, string]}
+     */
+    Validators.oneOf = (key, value, acceptedValues) => [
+        acceptedValues.includes(value),
+        `Key "${key}" must be one of ${acceptedValues.join(" | ")}, but is ${value} instead`
+    ];
+
     StartupEvents.init(() => {
         LycheeSchemaFunctionality.Validators = Validators;
     });

@@ -11,6 +11,10 @@ ServerEvents.recipes(event => {
                 item: "minecraft:raw_iron",
                 count: 2
             }
-        ]
+        ],
+        {
+            type: "weather",
+            weather: "rain"
+        }
     );
 });
