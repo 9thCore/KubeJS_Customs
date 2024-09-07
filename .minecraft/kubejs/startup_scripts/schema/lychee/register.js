@@ -54,6 +54,16 @@
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         );
 
+        // Platform-specific conditions
+        // Forge's don't seem to be doing anything, perhaps KubeJS' recipes run too late?
+        // In theory, the user should know what mods, items and tags exist at runtime (as they make the pack)
+        // I'll avoid implementing either version now, and will do later if a valid usecase arrives
+        if (Platform.isForge()) {
+            // commonProperties.push(LycheeSchemaFunctionality.ForgeConditions.getKey(Component, Builder));
+        } else if (Platform.isFabric()) {
+            // commonProperties.push(LycheeSchemaFunctionality.FabricConditions.getKey(Component, Builder));
+        }
+
         register(event, "lychee:block_interacting", [itemInKey, blockInKey]);
     });
 })();
