@@ -49,6 +49,34 @@
         const blockIn = Component("inputBlock").asArrayOrSelf();
         const blockInKey = blockIn.key("block_in");
 
+        // grumble grumble lychee and its stupid quality of life and positive additions...
+        const anyItemMatch = Builder(
+            Component("filteredString", {
+                filter: s => s === "lychee:always_true",
+                error: `Key type must be "lychee:always_true"`
+            }).key("type")
+        );
+
+        // hnngg....
+        const emptyHandMatch = Builder(
+            Component("filteredString", {
+                filter: s => s === "minecraft:air" || s === "air",
+                error: `Empty hand match must be one of "minecraft:air" | "air"`
+            }).key("item")
+        ).asArray().mapIn(object => {
+            if (typeof object === "string") {
+                return [{
+                    item: object
+                }];
+            } else if (!Array.isArray(object)) {
+                return [object];
+            }
+            return object;
+        });
+
+        const specialItem = emptyHandMatch.or(itemIn.or(anyItemMatch));
+        const specialItemKey = specialItem.key("item_in");
+
         commonProperties.push(
             LycheeSchemaFunctionality.PostActions.getKey(Component, Builder),
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
@@ -64,7 +92,7 @@
             // commonProperties.push(LycheeSchemaFunctionality.FabricConditions.getKey(Component, Builder));
         }
 
-        register(event, "lychee:block_interacting", [itemInKey, blockInKey]);
+        register(event, "lychee:block_interacting", [specialItemKey, blockInKey]);
     });
 })();
 
