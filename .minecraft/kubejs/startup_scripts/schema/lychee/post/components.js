@@ -1,46 +1,4 @@
 (function() {
-    let anyString = null; // Set lazily when getAny() is called
-    /**
-     * @description Compiles the Post Action's IDs into a human-readable string
-     * @param {{id: string, post: Internal.RecipeComponent}[]} allPostActions
-     * @returns {string}
-     */
-    const listPossibleIDs = (allPostActions) => {
-        const IDs = [];
-        for (let action of allPostActions) {
-            IDs.push(`"${action.id}"`);
-        }
-        return IDs.join(" | ");
-    }
-
-    /**
-     * 
-     * @param {Internal.RecipeSchemaRegistryEventJS} id ID of the Post Action
-     * @param {Function} validator Validator run on every component of the Post Action: first arg is key, second arg is value, return value is [passed: boolean, errorMessage: string]
-     * @param {Function} dataFixer Fixer for the entire object, used for things like converting {item: "2x minecraft:stone"} to {item: "minecraft:stone", count: 2}
-     * @returns {{id: string, handler: Function}}
-     */
-    const post = (id, validator, dataFixer) => {
-        return {
-            id: id,
-            handler: object => {
-                for (let key in object) {
-                    // Skip over the "type" key
-                    if (key === "type") {
-                        continue;
-                    }
-                    let [passed, error] = validator.call(null, key, object[key]);
-                    if (!passed) {
-                        console.error(error);
-                        return null;
-                    }
-                }
-                dataFixer.call(null, object);
-                return object;
-            }
-        };
-    }
-
     /**
      * 
      * @returns {Internal.RecipeComponent[]} List of all possible Post Actions
@@ -48,7 +6,7 @@
     const getAll = () => {
         const all = [];
 
-        all.push(post(
+        all.push(new LycheeSchemaFunctionality.ComplexData(
             "drop_item",
             (key, value) => {
                 switch (key) {
@@ -65,7 +23,7 @@
             LycheeSchemaFunctionality.DataFixers.item("item", "count")
         ));
 
-        all.push(post(
+        all.push(new LycheeSchemaFunctionality.ComplexData(
             "prevent_default",
             LycheeSchemaFunctionality.Validators.alwaysTrue,
             LycheeSchemaFunctionality.DataFixers.none
@@ -81,7 +39,7 @@
      * @returns {Internal.RecipeComponent} Combination of all possible Post Actions
      */
     const getAny = (Component, Builder) => {
-        anyString = Component("anyString");
+        const anyString = Component("anyString");
         const allPostActions = getAll();
 
         const item = Component("registryObject", {registry: "minecraft:item"});
@@ -90,7 +48,7 @@
         const possibleValues = Builder([
             anyString.key("type"),
             item.key("item").defaultOptional(),
-            count.key("count").optional(1)
+            count.key("count").defaultOptional()
         ]);
 
         const postAny = possibleValues.mapIn(object => {
@@ -107,9 +65,9 @@
             }
 
             if ("type" in object) {
-                console.SERVER.error(`"${object.type}" is not a valid Post Action type. Must be one of ${listPossibleIDs(allPostActions)}`);
+                console.SERVER.error(`"${object.type}" is not a valid Post Action type. Must be one of ${LycheeSchemaFunctionality.ComplexData.listPossibleIDs(allPostActions)}`);
             } else {
-                console.SERVER.error(`A Post Action must have a type, one of ${listPossibleIDs(allPostActions)}`);
+                console.SERVER.error(`A Post Action must have a type, one of ${LycheeSchemaFunctionality.ComplexData.listPossibleIDs(allPostActions)}`);
             }
             
             return null;

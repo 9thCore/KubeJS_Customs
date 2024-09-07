@@ -66,6 +66,7 @@
  * @property {object} FabricConditions - Object that provides interfacing with Fabric Conditions
  * @property {object} DataFixers - Object that provides various data fixers, used to ensure complex data is in the Lychee format
  * @property {object} Validators - Object that provides various validators, used to ensure complex data is correct
+ * @property {Function} ComplexData - Constructor of a bare-bones entry in a recipe's Post Actions, Contextual Conditions etc., with an optional validator and data fixer
  */
 const LycheeSchemaFunctionality = {
     PostActions: {
@@ -109,5 +110,15 @@ const LycheeSchemaFunctionality = {
     },
     Validators: {
         // Dummy, will be set up later
+    },
+    /**
+     * @constructor
+     * @param {string} id ID of the object
+     * @param {Function} validator Validator run on every component of the object: first arg is key, second arg is value, return value is [passed: boolean, errorMessage: string]
+     * @param {Function} dataFixer Fixer for the entire object
+     * @returns {{id: string, handler: Function}}
+     */
+    ComplexData: (id, validator, dataFixer) => {
+        throw new Error("Not implemented");
     }
 }
