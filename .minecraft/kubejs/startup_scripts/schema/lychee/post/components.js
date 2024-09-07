@@ -11,7 +11,7 @@
             (key, value) => {
                 switch (key) {
                     case "item":
-                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", false);
+                        return LycheeSchemaFunctionality.Validators.multiType(key, value, ["string", "object"], false);
                     case "count":
                         return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
                     case "nbt":
