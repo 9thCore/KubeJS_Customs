@@ -8,13 +8,6 @@
     Validators.alwaysTrue = () => [true, `This should never appear. If it does, it's a major internal error!`];
 
     /**
-     * @description A validator that always fails and calls the given key invalid
-     * @param {string} key 
-     * @returns {[boolean, string]}
-     */
-    Validators.invalidKey = (key) => [false, `Invalid key ${key}`];
-
-    /**
      * @description A validator that passes if the given value is of the expected type
      * @param {string} key 
      * @param {object} value 

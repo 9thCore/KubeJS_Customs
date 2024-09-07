@@ -17,7 +17,7 @@
                     case "nbt":
                         return LycheeSchemaFunctionality.Validators.type(key, value, "string", true);
                     default:
-                        return LycheeSchemaFunctionality.Validators.invalidKey(key);
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
             LycheeSchemaFunctionality.DataFixers.item("item", "count")
