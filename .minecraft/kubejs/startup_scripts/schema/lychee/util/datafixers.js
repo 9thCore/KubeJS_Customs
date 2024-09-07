@@ -35,7 +35,7 @@
             const [count, id, pass] = separateCountAndID(item);
 
             if (!pass) {
-                // Post Action does not need fixing
+                // Complex Data does not need fixing
                 return object;
             } else if (pass && countKey in object) {
                 console.SERVER.warn(`Object has both a count: ${object[countKey]} and item with count: ${item}; discarding item count`);
@@ -43,7 +43,7 @@
                 return object;
             }
             
-            // Fix Post Action
+            // Fix Complex Data
             object[itemKey] = id;
             object[countKey] = count;
             return object;
