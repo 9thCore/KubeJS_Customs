@@ -50,7 +50,7 @@
         const blockInKey = blockIn.key("block_in");
 
         commonProperties.push(
-            LycheeSchemaFunctionality.PostActions.getAny(Component, Builder).key("post")
+            LycheeSchemaFunctionality.PostActions.getKey(Component, Builder)
         );
 
         register(event, "lychee:block_interacting", [itemInKey, blockInKey]);
@@ -72,10 +72,22 @@ const LycheeSchemaFunctionality = {
     PostActions: {
         /**
          * @description This method should always return and not error
+         * @param {Function} Component The Convenient Component Helper (TM)
+         * @param {Function} Builder The Convenient Builder Helper (TM)
          * @returns {Internal.RecipeComponent} Component that represents all possible Post Actions
          */
-        getAny: () => {
+        getAny: (Component, Builder) => {
             throw new Error("Not implemented");
+        },
+
+        /**
+         * @description This method should always return and not error
+         * @param {Function} Component The Convenient Component Helper (TM)
+         * @param {Function} Builder The Convenient Builder Helper (TM)
+         * @returns {Internal.RecipeKey} Key that represents all possible Post Actions
+         */
+        getKey: (Component, Builder) => {
+            return LycheeSchemaFunctionality.PostActions.getAny(Component, Builder).key("post");
         }
     },
     ContextualConditions: {
@@ -85,6 +97,16 @@ const LycheeSchemaFunctionality = {
          */
         getAny: () => {
             throw new Error("Not implemented");
+        },
+
+        /**
+         * @description This method should always return and not error
+         * @param {Function} Component The Convenient Component Helper (TM)
+         * @param {Function} Builder The Convenient Builder Helper (TM)
+         * @returns {Internal.RecipeKey} Optional key that represents all possible Contextual Conditions
+         */
+        getKey: (Component, Builder) => {
+            return LycheeSchemaFunctionality.ContextualConditions.getAny(Component, Builder).key("contextual").defaultOptional();
         }
     },
     ForgeConditions: {
@@ -94,6 +116,16 @@ const LycheeSchemaFunctionality = {
          */
         getAny: () => {
             throw new Error("Not implemented");
+        },
+
+        /**
+         * @description If the current modloader is Forge, should return and not error; otherwise, will error
+         * @param {Function} Component The Convenient Component Helper (TM)
+         * @param {Function} Builder The Convenient Builder Helper (TM)
+         * @returns {Internal.RecipeKey} Optional key that represents all possible Forge Conditions
+         */
+        getKey: (Component, Builder) => {
+            return LycheeSchemaFunctionality.ForgeConditions.getAny(Component, Builder).key("conditions").defaultOptional();
         }
     },
     FabricConditions: {
@@ -103,6 +135,16 @@ const LycheeSchemaFunctionality = {
          */
         getAny: () => {
             throw new Error("Not implemented");
+        },
+
+        /**
+         * @description If the current modloader is Fabric, should return and not error; otherwise, will error
+         * @param {Function} Component The Convenient Component Helper (TM)
+         * @param {Function} Builder The Convenient Builder Helper (TM)
+         * @returns {Internal.RecipeKey} Optional key that represents all possible Fabric Conditions
+         */
+        getKey: (Component, Builder) => {
+            return LycheeSchemaFunctionality.FabricConditions.getAny(Component, Builder).key("fabric:load_conditions").defaultOptional();
         }
     },
     DataFixers: {
