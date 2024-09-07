@@ -4,11 +4,10 @@ const LycheePostActions = {};
 
 (function() {
     let anyString = null; // Set lazily when getAny() is called
-
     /**
      * @description Compiles the Post Action's IDs into a human-readable string
      * @param {{id: string, post: Internal.RecipeComponent}[]} allPostActions
-     * @returns {string[]}
+     * @returns {string}
      */
     const listPossibleIDs = (allPostActions) => {
         const IDs = [];
@@ -82,17 +81,28 @@ const LycheePostActions = {};
     /**
      * 
      * @param {Function} Component The Convenient Component Helper (TM)
+     * @param {Function} Builder The Convenient Builder Helper (TM)
      * @returns {Internal.RecipeComponent} Combination of all possible Post Actions
      */
-    const getAny = Component => {
+    const getAny = (Component, Builder) => {
         anyString = Component("anyString");
         const allPostActions = getAll();
 
         const item = Component("registryObject", {registry: "minecraft:item"});
         const count = Component("intNumber");
 
-        const possibleValues = count.or(item).or(anyString);
-        const postAny = possibleValues.asMap(anyString).mapIn(object => {
+        const possibleValues = Builder([
+            anyString.key("type"),
+            item.key("item").defaultOptional(),
+            count.key("count").optional(1)
+        ]);
+
+        const postAny = possibleValues.mapIn(object => {
+            if (typeof object !== "object") {
+                console.SERVER.error(`A Post Action must be an object`);
+                return null;
+            }
+
             for (const post of allPostActions) {
                 if (post.id === object.type) {
                     // Found Post Action, do stuff
@@ -100,10 +110,7 @@ const LycheePostActions = {};
                 }
             }
 
-            // No Post Action matched the type given, so error
-            if (typeof object !== "object") {
-                console.SERVER.error(`A Post Action be an object!`);
-            } else if ("type" in object) {
+            if ("type" in object) {
                 console.SERVER.error(`"${object.type}" is not a valid Post Action type. Must be one of ${listPossibleIDs(allPostActions)}`);
             } else {
                 console.SERVER.error(`A Post Action must have a type, one of ${listPossibleIDs(allPostActions)}`);

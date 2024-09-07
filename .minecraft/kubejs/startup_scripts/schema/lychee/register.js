@@ -32,8 +32,18 @@
         return (name, args) => event.components[name](args);
     }
 
+    /**
+     * @description Get the Convenient Builder Helper (TM)
+     * @param {Internal.RecipeSchemaRegistryEventJS} event 
+     * @returns 
+     */
+    const convenientBuilderHelper = event => {
+        return keys => convenientComponentHelper(event)("bool").builder(keys);
+    }
+
     StartupEvents.recipeSchemaRegistry(event => {
         const Component = convenientComponentHelper(event);
+        const Builder = convenientBuilderHelper(event);
         
         const itemIn = Component("inputItem").asArrayOrSelf();
         const itemInKey = itemIn.key("item_in");
@@ -42,7 +52,7 @@
         const blockInKey = blockIn.key("block_in");
 
         commonProperties.push(
-            LycheePostActions.getAny(Component).key("post")
+            LycheePostActions.getAny(Component, Builder).key("post")
         );
 
         register(event, "lychee:block_interacting", [itemInKey, blockInKey]);
