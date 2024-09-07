@@ -43,7 +43,7 @@
         const allPostActions = getAll();
 
         const item = Component("registryObject", {registry: "minecraft:item"});
-        const count = Component("intNumber");
+        const count = Component("intNumberRange", {min: 1});
 
         const stringOrNBT = anyString.or(LycheeSchemaFunctionality.NBTComponent.get(Component));
 
