@@ -15,16 +15,22 @@
                     if (key === "type") {
                         continue;
                     }
-                    let [passed, error] = validator.call(null, key, object[key]);
+                    let [passed, message] = validator.call(null, key, object[key]);
                     if (!passed) {
-                        console.error(error);
+                        console.SERVER.error(message);
                         return null;
                     }
                 }
             }
+            
             if (typeof dataFixer === "function") {
-                dataFixer.call(null, object);
+                try {
+                    dataFixer.call(null, object);
+                } catch (e) {
+                    console.SERVER.error(`FATAL: Error caught during data fixing: ${e}`);
+                }
             }
+
             return object;
         };
     };
