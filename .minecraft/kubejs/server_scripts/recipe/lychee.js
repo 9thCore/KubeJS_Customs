@@ -13,8 +13,17 @@ ServerEvents.recipes(event => {
             }
         ],
         {
-            type: "weather",
-            weather: "rain"
+            type: "or",
+            contextual: [
+                {
+                    type: "weather",
+                    weather: "thunder"
+                },
+                {
+                    type: "weather",
+                    weather: "clear"
+                }
+            ]
         }
     );
 });

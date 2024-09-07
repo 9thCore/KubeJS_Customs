@@ -1,5 +1,22 @@
 (function() {
     /**
+     * @description Helper for the shared code of conditions using other conditions
+     * @param {boolean} isArray 
+     * @returns {Function} Validator
+     */
+    const recursiveContextualValidator = (isArray) => (key, value) => {
+        switch (key) {
+            case "contextual":
+                if (Array.isArray(value) !== isArray) {
+                    return LycheeSchemaFunctionality.Validators.alwaysFalse(`Key ${key} ${isArray ? "must" : "cannot"} be an array for this Contextual Condition!`);
+                }
+                return LycheeSchemaFunctionality.Validators.type(key, value, "object", false);
+            default:
+                return LycheeSchemaFunctionality.Validators.alwaysTrue();
+        }
+    };
+
+    /**
      * 
      * @returns {Internal.RecipeComponent[]} List of all possible Contextual Conditions
      */
@@ -16,6 +33,24 @@
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
+            LycheeSchemaFunctionality.DataFixers.none
+        ));
+
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "not",
+            recursiveContextualValidator(false),
+            LycheeSchemaFunctionality.DataFixers.none
+        ));
+
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "or",
+            recursiveContextualValidator(true),
+            LycheeSchemaFunctionality.DataFixers.none
+        ));
+
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "and",
+            recursiveContextualValidator(true),
             LycheeSchemaFunctionality.DataFixers.none
         ));
 
@@ -41,6 +76,9 @@
             boolean.key("secret").defaultOptional(),
             anyString.key("description").defaultOptional()
         ]);
+
+        // Allow recursive conditions for types like "not"
+        possibleValues.add(possibleValues.asArrayOrSelf().key("contextual").defaultOptional());
 
         const contextualAny = possibleValues.mapIn(object => {
             if (typeof object !== "object") {
