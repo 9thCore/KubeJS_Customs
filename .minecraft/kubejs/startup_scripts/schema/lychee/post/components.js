@@ -15,12 +15,12 @@
                     case "count":
                         return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
                     case "nbt":
-                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", true);
+                        return LycheeSchemaFunctionality.Validators.multiType(key, value, ["string", "object"], true);
                     default:
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
-            LycheeSchemaFunctionality.DataFixers.item("item", "count")
+            LycheeSchemaFunctionality.DataFixers.item("item", "count", "nbt")
         ));
 
         all.push(new LycheeSchemaFunctionality.ComplexData(
@@ -45,10 +45,13 @@
         const item = Component("registryObject", {registry: "minecraft:item"});
         const count = Component("intNumber");
 
+        const stringOrNBT = anyString.or(LycheeSchemaFunctionality.NBTComponent.get(Component));
+
         const possibleValues = Builder([
             anyString.key("type"),
             item.key("item").defaultOptional(),
             count.key("count").defaultOptional(),
+            stringOrNBT.key("nbt").defaultOptional(),
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
 

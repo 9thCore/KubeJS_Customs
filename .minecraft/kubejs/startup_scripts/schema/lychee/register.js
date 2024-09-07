@@ -68,6 +68,7 @@
  * @property {object} DataFixers - Object that provides various data fixers, used to ensure complex data is in the Lychee format
  * @property {object} Validators - Object that provides various validators, used to ensure complex data is correct
  * @property {Function} ComplexData - Constructor of a bare-bones entry in a recipe's Post Actions, Contextual Conditions etc., with an optional validator and data fixer
+ * @property {object} NBTComponent - Object that provides interfacing with the NBT system, particularly getting a Recipe Component representing it
  */
 const LycheeSchemaFunctionality = {
     PostActions: {
@@ -163,5 +164,24 @@ const LycheeSchemaFunctionality = {
      */
     ComplexData: (id, validator, dataFixer) => {
         throw new Error("Not implemented");
+    },
+    NBTComponent: {
+        /**
+         * @description This method should always return and not error
+         * @param {Function} Component The Convenient Component Helper (TM)
+         * @returns {Internal.RecipeComponent} Component that represents NBT
+         */
+        get: (Component) => {
+            throw new Error("Not implemented");
+        },
+
+        /**
+         * @description This method should always return and not error
+         * @param {Function} Component The Convenient Component Helper (TM)
+         * @returns {Internal.RecipeKey} Optional key that represents NBT
+         */
+        getKey: (Component) => {
+            return LycheeSchemaFunctionality.NBTComponent.get(Component).key("nbt").defaultOptional();
+        }
     }
 }

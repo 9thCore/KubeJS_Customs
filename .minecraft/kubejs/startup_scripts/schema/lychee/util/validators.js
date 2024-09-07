@@ -28,6 +28,21 @@
     ];
 
     /**
+     * @description A validator that passes if the given value is one of the expected types
+     * @param {string} key 
+     * @param {object} value 
+     * @param {("bigint"|"boolean"|"function"|"number"|"object"|"string"|"symbol"|"undefined")[]} types
+     * @param {boolean} acceptUndefined
+     * @returns {[boolean, string]}
+     */
+    Validators.multiType = (key, value, types, acceptUndefined) => {
+        if (acceptUndefined && value === undefined) {
+            return Validators.alwaysTrue();
+        }
+        return Validators.oneOf(key, typeof value, types);
+    };
+
+    /**
      * @description A validator that passes if the given value is in the passed accepted values array
      * @param {string} key 
      * @param {object} value 
@@ -36,7 +51,7 @@
      */
     Validators.oneOf = (key, value, acceptedValues) => [
         acceptedValues.includes(value),
-        `Key "${key}" must be one of ${acceptedValues.join(" | ")}, but is ${value} instead`
+        `Key ${key} must be one of ${acceptedValues.join(" | ")}, but is ${value} instead`
     ];
 
     /**
