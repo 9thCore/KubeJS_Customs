@@ -1,5 +1,3 @@
-// Carefully contain the radioactive matter and don't let any of this spill into the environment
-
 (function() {
     const $RecipeSchema = Java.loadClass("dev.latvian.mods.kubejs.recipe.schema.RecipeSchema");
     const commonProperties = []; // Set inside of the registry event
@@ -52,9 +50,64 @@
         const blockInKey = blockIn.key("block_in");
 
         commonProperties.push(
-            LycheePostActions.getAny(Component, Builder).key("post")
+            LycheeSchemaFunctionality.PostActions.getAny(Component, Builder).key("post")
         );
 
         register(event, "lychee:block_interacting", [itemInKey, blockInKey]);
     });
 })();
+
+/**
+ * An object that includes all other Lychee recipe schema related objects, such that they don't end up flooding the startup script environment
+ * @type {object}
+ * @property {object} PostActions - Object that provides interfacing with Lychee recipe Post Actions
+ * @property {object} ContextualConditions - Object that provides interfacing with Lychee recipe Contextual Conditions
+ * @property {object} ForgeConditions - Object that provides interfacing with Forge Conditions
+ * @property {object} FabricConditions - Object that provides interfacing with Fabric Conditions
+ * @property {object} DataFixers - Object that provides various data fixers, used to ensure complex data is in the Lychee format
+ * @property {object} Validators - Object that provides various validators, used to ensure complex data is correct
+ */
+const LycheeSchemaFunctionality = {
+    PostActions: {
+        /**
+         * @description This method should always return and not error
+         * @returns {Internal.RecipeComponent} Component that represents all possible Post Actions
+         */
+        getAny: () => {
+            throw new Error("Not implemented");
+        }
+    },
+    ContextualConditions: {
+        /**
+         * @description This method should always return and not error
+         * @returns {Internal.RecipeComponent} Component that represents all possible Contextual Conditions
+         */
+        getAny: () => {
+            throw new Error("Not implemented");
+        }
+    },
+    ForgeConditions: {
+        /**
+         * @description If the current modloader is Forge, should return and not error; otherwise, will error
+         * @returns {Internal.RecipeComponent} Component that represents all possible Forge Conditions
+         */
+        getAny: () => {
+            throw new Error("Not implemented");
+        }
+    },
+    FabricConditions: {
+        /**
+         * @description If the current modloader is Fabric, should return and not error; otherwise, will error
+         * @returns {Internal.RecipeComponent} Component that represents all possible Fabric Conditions
+         */
+        getAny: () => {
+            throw new Error("Not implemented");
+        }
+    },
+    DataFixers: {
+        // Dummy, will be set up later
+    },
+    Validators: {
+        // Dummy, will be set up later
+    }
+}

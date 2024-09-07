@@ -20,6 +20,6 @@
     ];
 
     StartupEvents.init(() => {
-        LycheePostActions.Validators = Validators;
+        LycheeSchemaFunctionality.Validators = Validators;
     });
 })();

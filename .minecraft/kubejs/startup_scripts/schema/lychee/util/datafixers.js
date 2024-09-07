@@ -51,6 +51,6 @@
     }
 
     StartupEvents.init(() => {
-        LycheePostActions.DataFixers = DataFixers;
+        LycheeSchemaFunctionality.DataFixers = DataFixers;
     });
 })();

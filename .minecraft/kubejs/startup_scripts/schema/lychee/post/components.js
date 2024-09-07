@@ -1,7 +1,3 @@
-// Unfortunately, this does need to be exposed to the environment for the sake of readability
-// Me when no export
-const LycheePostActions = {};
-
 (function() {
     let anyString = null; // Set lazily when getAny() is called
     /**
@@ -57,22 +53,22 @@ const LycheePostActions = {};
             (key, value) => {
                 switch (key) {
                     case "item":
-                        return LycheePostActions.Validators.type(key, value, "string", false);
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", false);
                     case "count":
-                        return LycheePostActions.Validators.type(key, value, "number", true);
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
                     case "nbt":
-                        return LycheePostActions.Validators.type(key, value, "string", true);
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", true);
                     default:
                         return false;
                 }
             },
-            LycheePostActions.DataFixers.item("item", "count")
+            LycheeSchemaFunctionality.DataFixers.item("item", "count")
         ));
 
         all.push(post(
             "prevent_default",
-            LycheePostActions.Validators.alwaysTrue,
-            LycheePostActions.DataFixers.none
+            LycheeSchemaFunctionality.Validators.alwaysTrue,
+            LycheeSchemaFunctionality.DataFixers.none
         ));
 
         return all;
@@ -123,6 +119,6 @@ const LycheePostActions = {};
     };
 
     StartupEvents.init(() => {
-        LycheePostActions.getAny = getAny;
+        LycheeSchemaFunctionality.PostActions.getAny = getAny;
     });
 })();
