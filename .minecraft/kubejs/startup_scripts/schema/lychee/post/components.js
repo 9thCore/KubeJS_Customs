@@ -257,6 +257,26 @@
             ["damage", "target"]
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "set_item",
+            (key, value) => {
+                switch (key) {
+                    case "target":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", true);
+                    case "item":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", false);
+                    case "count":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", true);
+                    case "nbt":
+                        return LycheeSchemaFunctionality.Validators.multiType(key, value, ["string", "object"], true);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["target", "item", "count", "nbt"]
+        ));
+
         return all;
     }
 
