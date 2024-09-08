@@ -201,6 +201,46 @@
             ["factor"]
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "delay",
+            (key, value) => {
+                switch (key) {
+                    case "s":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", false);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["s"]
+        ));
+
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "break",
+            LycheeSchemaFunctionality.Validators.alwaysTrue,
+            LycheeSchemaFunctionality.DataFixers.none
+        ));
+
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "cycle_state_property",
+            (key, value) => {
+                switch (key) {
+                    case "block":
+                        return LycheeSchemaFunctionality.Validators.multiType(key, value, ["string", "object"], false);
+                    case "property":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", false);
+                    case "offsetX":
+                    case "offsetY":
+                    case "offsetZ":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["block", "property", "offsetX", "offsetY", "offsetZ"]
+        ));
+
         return all;
     }
 
@@ -244,6 +284,7 @@
             anyDouble.key("chance").defaultOptional(),
             anyDouble.key("s").defaultOptional(),
             anyDouble.key("factor").defaultOptional(),
+            anyString.key("property").defaultOptional(),
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
 

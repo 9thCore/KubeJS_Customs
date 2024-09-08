@@ -106,6 +106,11 @@ ServerEvents.recipes(event => {
                     {
                         type: "hurt",
                         damage: 5
+                    },
+                    {
+                        type: "cycle_state_property",
+                        block: "minecraft:wheat",
+                        property: "age"
                     }
                 ],
                 contextual: {
