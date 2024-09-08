@@ -241,6 +241,22 @@
             ["block", "property", "offsetX", "offsetY", "offsetZ"]
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "damage_item",
+            (key, value) => {
+                switch (key) {
+                    case "damage":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
+                    case "target":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", true);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["damage", "target"]
+        ));
+
         return all;
     }
 
@@ -279,12 +295,13 @@
             anyString.key("block_interaction").defaultOptional(),
             anyDouble.key("radius").defaultOptional(),
             anyDouble.key("radius_step").defaultOptional(),
-            LycheeSchemaFunctionality.Bounds.DoubleBounds.get(Component, Builder).key("damage").defaultOptional(),
+            LycheeSchemaFunctionality.Bounds.DoubleBounds.get(Component, Builder).or(anyInt).key("damage").defaultOptional(),
             anyString.key("source").defaultOptional(),
             anyDouble.key("chance").defaultOptional(),
             anyDouble.key("s").defaultOptional(),
             anyDouble.key("factor").defaultOptional(),
             anyString.key("property").defaultOptional(),
+            anyString.key("target").defaultOptional(),
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
 

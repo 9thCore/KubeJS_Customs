@@ -76,6 +76,13 @@ ServerEvents.recipes(event => {
         },
         [
             {
+                type: "prevent_default"
+            },
+            {
+                type: "damage_item",
+                damage: 2.5
+            },
+            {
                 type: "random",
                 rolls: 3,
                 entries: [
