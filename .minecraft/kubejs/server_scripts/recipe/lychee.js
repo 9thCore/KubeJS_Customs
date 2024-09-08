@@ -71,8 +71,15 @@ ServerEvents.recipes(event => {
             }
         },
         {
-            type: "execute",
-            command: "execute as @a run say HELLO HI HELLO"
+            type: "random",
+            rolls: 3,
+            entries: [
+                {
+                    type: "execute",
+                    command: "execute as @a run say HELLO HI HELLO"
+                }
+            ],
+            empty_weight: 8
         }
     );
 });

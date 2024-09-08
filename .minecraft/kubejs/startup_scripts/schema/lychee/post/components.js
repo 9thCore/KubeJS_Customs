@@ -65,6 +65,39 @@
             LycheeSchemaFunctionality.DataFixers.none
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "drop_xp",
+            (key, value) => {
+                switch (key) {
+                    case "xp":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", false);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none
+        ));
+
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "random",
+            (key, value) => {
+                switch (key) {
+                    case "rolls":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", false);
+                    case "entries":
+                        if (value === undefined) {
+                            return LycheeSchemaFunctionality.Validators.alwaysFalse();
+                        }
+                        return LycheeSchemaFunctionality.Validators.forEveryEntryType(key, value, "object", false);
+                    case "empty_weight":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none
+        ));
+
         return all;
     }
 
@@ -95,8 +128,13 @@
             anyString.key("command").defaultOptional(),
             bool.key("hide").defaultOptional(),
             bool.key("repeat").defaultOptional(),
+            count.key("xp").defaultOptional(),
+            LycheeSchemaFunctionality.Bounds.IntBounds.get(Component, Builder).key("rolls").defaultOptional(),
+            anyInt.key("empty_weight").defaultOptional(),
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
+
+        possibleValues.add(possibleValues.asArray().key("entries").defaultOptional());
 
         const postAny = possibleValues.mapIn(object => {
             if (typeof object !== "object") {
