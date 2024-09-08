@@ -1,7 +1,7 @@
 ServerEvents.recipes(event => {
     event.recipes.lychee.block_interacting(
         "minecraft:iron_pickaxe",
-        "minecraft:stone",
+        "#forge:stone",
         [
             {
                 type: "prevent_default"
@@ -17,6 +17,31 @@ ServerEvents.recipes(event => {
                 // NBT is also supported!
                 // item: Item.of("minecraft:stone_sword", 1, {Damage: 100})
                 // item: "minecraft:stone_sword", nbt: {Damage: 100}
+            },
+            {
+                type: "place",
+                block: {
+                    tag: "minecraft:campfires", // Matches first block with this tag
+                    state: {
+                        lit: false
+                    },
+                    nbt: {
+                        Items: [
+                            {
+                                Slot: 0,
+                                id: "minecraft:porkchop", // Note that strings in NBT data will be auto-wrapped in ""
+                                // id: "\"minecraft:porkchop\"", // Can also wrap manually, if desired
+                                Count: 1
+                            }
+                        ]
+                        // CookingTotalTimes: "[100, 0, 0, 0]" // This does not work in object NBT, due to using a special array: [I; 0, 0, 0, 0]. Use the string form instead!
+                    }
+                    // Alternative form:
+                    // nbt: "{Items: [{Slot: 0, id: \"minecraft:porkchop\", Count: 1}], CookingTotalTimes: [I; 100, 0, 0, 0]}" // CookingTotalTimes works here
+                },
+                offsetX: 0,
+                offsetY: 1
+                // offsetZ: 0 // Defaults to 0, no need to add!
             }
         ],
         {
@@ -33,4 +58,21 @@ ServerEvents.recipes(event => {
             ]
         }
     );
+
+    event.recipes.lychee.block_interacting(
+        "minecraft:stone_hoe",
+        {
+            blocks: ["minecraft:wheat"],
+            state: {
+                age: {
+                    min: 1,
+                    max: 3
+                }
+            }
+        },
+        {
+            type: "drop_item",
+            item: "2x minecraft:wheat"
+        }
+    )
 });

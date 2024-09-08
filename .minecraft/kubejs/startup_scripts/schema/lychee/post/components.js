@@ -29,6 +29,12 @@
             LycheeSchemaFunctionality.DataFixers.none
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "place",
+            LycheeSchemaFunctionality.Validators.alwaysTrue,
+            LycheeSchemaFunctionality.DataFixers.none
+        ));
+
         return all;
     }
 
@@ -44,14 +50,17 @@
 
         const item = Component("registryObject", {registry: "minecraft:item"});
         const count = Component("intNumberRange", {min: 1});
-
-        const stringOrNBT = anyString.or(LycheeSchemaFunctionality.NBTComponent.get(Component));
+        const anyInt = Component("anyIntNumber");
 
         const possibleValues = Builder([
             anyString.key("type"),
             item.key("item").defaultOptional(),
             count.key("count").defaultOptional(),
-            stringOrNBT.key("nbt").defaultOptional(),
+            LycheeSchemaFunctionality.NBTComponent.getOrString(Component).key("nbt").defaultOptional(),
+            LycheeSchemaFunctionality.Block.BlockPredicate.getKey(Component, Builder),
+            anyInt.key("offsetX").defaultOptional(),
+            anyInt.key("offsetY").defaultOptional(),
+            anyInt.key("offsetZ").defaultOptional(),
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
 
