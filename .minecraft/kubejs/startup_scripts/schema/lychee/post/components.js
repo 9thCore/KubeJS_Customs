@@ -159,6 +159,48 @@
             ["damage", "source"]
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "anvil_damage_chance",
+            (key, value) => {
+                switch (key) {
+                    case "chance":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", false);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["chance"]
+        ));
+
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "add_item_cooldown",
+            (key, value) => {
+                switch (key) {
+                    case "s":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", false);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["s"]
+        ));
+
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "move_towards_face",
+            (key, value) => {
+                switch (key) {
+                    case "factor":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["factor"]
+        ));
+
         return all;
     }
 
@@ -199,6 +241,9 @@
             anyDouble.key("radius_step").defaultOptional(),
             LycheeSchemaFunctionality.Bounds.DoubleBounds.get(Component, Builder).key("damage").defaultOptional(),
             anyString.key("source").defaultOptional(),
+            anyDouble.key("chance").defaultOptional(),
+            anyDouble.key("s").defaultOptional(),
+            anyDouble.key("factor").defaultOptional(),
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
 

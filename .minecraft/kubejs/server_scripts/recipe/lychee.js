@@ -42,6 +42,10 @@ ServerEvents.recipes(event => {
                 offsetX: 0,
                 offsetY: 1
                 // offsetZ: 0 // Defaults to 0, no need to add!
+            },
+            {
+                type: "add_item_cooldown",
+                s: 1
             }
         ],
         {
