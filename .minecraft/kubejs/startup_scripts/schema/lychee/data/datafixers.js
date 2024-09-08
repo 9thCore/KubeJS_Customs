@@ -67,23 +67,17 @@
     }
 
     /**
-     * @description Constructor for an ItemStack data fixer, obtained from Item.of()
-     * @param {string} itemKey 
-     * @param {string} countKey 
-     * @param {string} nbtKey
-     * @returns {Function} Data fixer focusing on items: changes from item stack to Lychee format
+     * @description Data fixer that recursively fixes unwrapped strings (string -> "string")
+     * @param {object} object 
      */
-    DataFixers.itemStack = (itemKey, countKey, nbtKey) => {
-        /**
-         * @param {Internal.ItemStack} stack
-         */
-        return stack => {
-            console.log(stack.getNbtString());
-            console.log(stack.getCount());
-            console.log(stack.getItem().getDescriptionId());
-            stack.hasNBT
-            return object;
-        };
+    DataFixers.nbt = object => {
+        for (const key in object) {
+            if (typeof object[key] === "string" && !object[key].startsWith(`"`)) {
+                object[key] = `"${object[key]}"`;
+            } else if (typeof object[key] === "object") {
+                DataFixers.nbt(object[key]);
+            }
+        }
     }
 
     StartupEvents.init(() => {

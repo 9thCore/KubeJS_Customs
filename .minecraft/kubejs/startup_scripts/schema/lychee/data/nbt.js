@@ -11,9 +11,9 @@
         const anyFloat = Component("anyFloatNumber");
         const anyDouble = Component("anyDoubleNumber");
 
-        const possibleValues = anyString.or(bool).or(anyInt).or(anyLong).or(anyFloat).or(anyDouble);
+        const possibleValues = bool.or(anyInt).or(anyLong).or(anyFloat).or(anyDouble).or(anyString);
         
-        return possibleValues.asMap(anyString);
+        return possibleValues.asMap(anyString).mapIn(LycheeSchemaFunctionality.DataFixers.nbt);
     }
 
     StartupEvents.init(() => {
