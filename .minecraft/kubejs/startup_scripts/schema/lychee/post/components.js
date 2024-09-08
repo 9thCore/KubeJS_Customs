@@ -277,6 +277,26 @@
             ["target", "item", "count", "nbt"]
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "nbt_patch",
+            (key, value) => {
+                switch (key) {
+                    case "op":
+                        return LycheeSchemaFunctionality.Validators.oneOf(key, value, ["add", "remove", "replace", "copy", "move", "test", "deep_merge"]);
+                    case "path":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", false);
+                    case "from":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", true);
+                    case "value":
+                        return LycheeSchemaFunctionality.Validators.multiType(key, value, ["string", "boolean", "number"], true);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["op", "path", "from", "value"]
+        ));
+
         return all;
     }
 
@@ -295,6 +315,11 @@
         const count = Component("intNumberRange", {min: 1});
         const anyInt = Component("anyIntNumber");
         const anyDouble = Component("anyDoubleNumber");
+        const anyLong = Component("anyLongNumber");
+        const anyFloat = Component("anyFloatNumber");
+
+        // just nbt
+        const patchValue = bool.or(anyInt).or(anyLong).or(anyFloat).or(anyDouble).or(anyString);
 
         const possibleValues = Builder([
             anyString.key("type"),
@@ -322,6 +347,10 @@
             anyDouble.key("factor").defaultOptional(),
             anyString.key("property").defaultOptional(),
             anyString.key("target").defaultOptional(),
+            anyString.key("op").defaultOptional(),
+            anyString.key("path").defaultOptional(),
+            anyString.key("from").defaultOptional(),
+            patchValue.key("value").defaultOptional(),
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
 
