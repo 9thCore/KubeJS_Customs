@@ -103,6 +103,24 @@
             ["rolls", "entries", "empty_weight"]
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "if",
+            (key, value) => {
+                switch (key) {
+                    case "then":
+                    case "else":
+                        if (!Array.isArray(value)) {
+                            return LycheeSchemaFunctionality.Validators.type(key, value, "object", false);
+                        }
+                        return LycheeSchemaFunctionality.Validators.forEveryEntryType(key, value, "object", false);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["then", "else"]
+        ));
+
         return all;
     }
 
@@ -140,6 +158,8 @@
         ]);
 
         possibleValues.add(possibleValues.asArray().key("entries").defaultOptional());
+        possibleValues.add(possibleValues.asArrayOrSelf().key("then").defaultOptional());
+        possibleValues.add(possibleValues.asArrayOrSelf().key("else").defaultOptional());
 
         const postAny = possibleValues.mapIn(object => {
             if (typeof object !== "object") {

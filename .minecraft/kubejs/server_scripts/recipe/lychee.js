@@ -70,16 +70,33 @@ ServerEvents.recipes(event => {
                 }
             }
         },
-        {
-            type: "random",
-            rolls: 3,
-            entries: [
-                {
+        [
+            {
+                type: "random",
+                rolls: 3,
+                entries: [
+                    {
+                        type: "execute",
+                        command: "execute as @a run say HELLO HI HELLO"
+                    }
+                ],
+                empty_weight: 8
+            },
+            {
+                type: "if",
+                then: {
                     type: "execute",
-                    command: "execute as @a run say HELLO HI HELLO"
+                    command: "execute as @a run say Passed!"
+                },
+                else: {
+                    type: "execute",
+                    command: "execute as @a run say Did not pass!"
+                },
+                contextual: {
+                    type: "weather",
+                    weather: "clear"
                 }
-            ],
-            empty_weight: 8
-        }
+            }
+        ]
     );
 });
