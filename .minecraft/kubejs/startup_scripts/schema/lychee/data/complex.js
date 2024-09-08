@@ -4,17 +4,14 @@
      * @param {string} id ID of the object
      * @param {Function} validator Validator run on every component of the object: first arg is key, second arg is value, return value is [passed: boolean, errorMessage: string]
      * @param {Function} dataFixer Fixer for the entire object
+     * @param {string[]} properties All of this object's properties except for "type" (if undefined, none are considered)
      * @returns {{id: string, handler: Function}}
      */
-    function ComplexData(id, validator, dataFixer) {
+    function ComplexData(id, validator, dataFixer, properties) {
         this.id = id;
         this.handler = object => {
-            if (typeof validator === "function") {
-                for (let key in object) {
-                    // Skip over the "type" key
-                    if (key === "type") {
-                        continue;
-                    }
+            if (typeof validator === "function" && properties !== undefined) {
+                for (let key of properties) {
                     let [passed, message] = validator.call(null, key, object[key]);
                     if (!passed) {
                         console.SERVER.error(message);

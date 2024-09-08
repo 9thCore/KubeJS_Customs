@@ -20,7 +20,8 @@
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
-            LycheeSchemaFunctionality.DataFixers.item("item", "count", "nbt")
+            LycheeSchemaFunctionality.DataFixers.item("item", "count", "nbt"),
+            ["item", "count", "nbt"]
         ));
 
         all.push(new LycheeSchemaFunctionality.ComplexData(
@@ -45,7 +46,8 @@
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
-            LycheeSchemaFunctionality.DataFixers.none
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["block", "offsetX", "offsetY", "offsetZ"]
         ));
 
         all.push(new LycheeSchemaFunctionality.ComplexData(
@@ -62,7 +64,8 @@
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
-            LycheeSchemaFunctionality.DataFixers.none
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["command", "hide", "repeat"]
         ));
 
         all.push(new LycheeSchemaFunctionality.ComplexData(
@@ -75,7 +78,8 @@
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
-            LycheeSchemaFunctionality.DataFixers.none
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["xp"]
         ));
 
         all.push(new LycheeSchemaFunctionality.ComplexData(
@@ -85,8 +89,8 @@
                     case "rolls":
                         return LycheeSchemaFunctionality.Validators.type(key, value, "number", false);
                     case "entries":
-                        if (value === undefined) {
-                            return LycheeSchemaFunctionality.Validators.alwaysFalse();
+                        if (!Array.isArray(value)) {
+                            return LycheeSchemaFunctionality.Validators.type(key, value, "array", false);
                         }
                         return LycheeSchemaFunctionality.Validators.forEveryEntryType(key, value, "object", false);
                     case "empty_weight":
@@ -95,7 +99,8 @@
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
-            LycheeSchemaFunctionality.DataFixers.none
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["rolls", "entries", "empty_weight"]
         ));
 
         return all;

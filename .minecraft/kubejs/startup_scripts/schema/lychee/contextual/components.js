@@ -33,25 +33,29 @@
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
-            LycheeSchemaFunctionality.DataFixers.none
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["weather"]
         ));
 
         all.push(new LycheeSchemaFunctionality.ComplexData(
             "not",
             recursiveContextualValidator(false),
-            LycheeSchemaFunctionality.DataFixers.none
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["contextual"]
         ));
 
         all.push(new LycheeSchemaFunctionality.ComplexData(
             "or",
             recursiveContextualValidator(true),
-            LycheeSchemaFunctionality.DataFixers.none
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["contextual"]
         ));
 
         all.push(new LycheeSchemaFunctionality.ComplexData(
             "and",
             recursiveContextualValidator(true),
-            LycheeSchemaFunctionality.DataFixers.none
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["contextual"]
         ));
 
         return all;

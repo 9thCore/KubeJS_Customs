@@ -208,9 +208,10 @@ const LycheeSchemaFunctionality = {
      * @param {string} id ID of the object
      * @param {Function} validator Validator run on every component of the object: first arg is key, second arg is value, return value is [passed: boolean, errorMessage: string]
      * @param {Function} dataFixer Fixer for the entire object
+     * @param {string[]} properties All of this object's properties except for "type" (if undefined, none are considered)
      * @returns {{id: string, handler: Function}}
      */
-    ComplexData: (id, validator, dataFixer) => {
+    ComplexData: (id, validator, dataFixer, properties) => {
         throw new Error("Not implemented");
     },
     NBTComponent: {
