@@ -46,7 +46,7 @@
         const itemIn = Component("inputItem").asArrayOrSelf();
         const itemInKey = itemIn.key("item_in");
 
-        const blockIn = Component("inputBlock").asArrayOrSelf();
+        const blockIn = LycheeSchemaFunctionality.Block.BlockPredicate.get(Component, Builder).asArrayOrSelf();
         const blockInKey = blockIn.key("block_in");
 
         // grumble grumble lychee and its stupid quality of life and positive additions...
@@ -99,6 +99,7 @@
 /**
  * An object that includes all other Lychee recipe schema related objects, such that they don't end up flooding the startup script environment
  * @type {object}
+ * @property {object} LoadedClasses - Object that hosts utility Java classes for use in various components
  * @property {object} PostActions - Object that provides interfacing with Lychee recipe Post Actions
  * @property {object} ContextualConditions - Object that provides interfacing with Lychee recipe Contextual Conditions
  * @property {object} ForgeConditions - Object that provides interfacing with Forge Conditions
@@ -107,8 +108,17 @@
  * @property {object} Validators - Object that provides various validators, used to ensure complex data is correct
  * @property {Function} ComplexData - Constructor of a bare-bones entry in a recipe's Post Actions, Contextual Conditions etc., with an optional validator and data fixer
  * @property {object} NBTComponent - Object that provides interfacing with the NBT system, particularly getting a Recipe Component representing it
+ * @property {object} Block - Grouping of block related Recipe Components
+ * @property {object} Block.BlockPredicate - Object that provides interfacing with BlockPredicates, particularly getting a Recipe Component representing it
+ * @property {object} Block.StatePropertiesPredicate - Object that provides interfacing with StatePropertiesPredicates, particularly getting a Recipe Component representing it
+ * @property {object} Bounds - Grouping of number range related Recipe Components
+ * @property {object} Bounds.IntBounds - Object that provides interfacing with IntBounds, particularly getting a Recipe Component representing it
+ * @property {object} Bounds.DoubleBounds - Object that provides interfacing with DoubleBounds, particularly getting a Recipe Component representing it
  */
 const LycheeSchemaFunctionality = {
+    LoadedClasses: {
+        $JsonPrimitive: Java.loadClass("com.google.gson.JsonPrimitive")
+    },
     PostActions: {
         /**
          * @description This method should always return and not error
@@ -216,10 +226,107 @@ const LycheeSchemaFunctionality = {
         /**
          * @description This method should always return and not error
          * @param {Function} Component The Convenient Component Helper (TM)
+         * @returns {Internal.RecipeComponent} Optional key that represents a string or object NBT
+         */
+        getOrString: (Component) => {
+            return LycheeSchemaFunctionality.NBTComponent.get(Component).or(Component("anyString"));
+        },
+
+        /**
+         * @description This method should always return and not error
+         * @param {Function} Component The Convenient Component Helper (TM)
          * @returns {Internal.RecipeKey} Optional key that represents NBT
          */
         getKey: (Component) => {
             return LycheeSchemaFunctionality.NBTComponent.get(Component).key("nbt").defaultOptional();
+        }
+    },
+    Block: {
+        BlockPredicate: {
+            /**
+             * @description This method should always return and not error
+             * @param {Function} Component The Convenient Component Helper (TM)
+             * @param {Function} Builder The Convenient Builder Helper (TM)
+             * @returns {Internal.RecipeComponent} Component that represents a BlockPredicate
+             */
+            get: (Component, Builder) => {
+                throw new Error("Not implemented");
+            },
+
+            /**
+             * @description This method should always return and not error
+             * @param {Function} Component The Convenient Component Helper (TM)
+             * @param {Function} Builder The Convenient Builder Helper (TM)
+             * @returns {Internal.RecipeKey} Optional key that represents a BlockPredicate
+             */
+            getKey: (Component, Builder) => {
+                return LycheeSchemaFunctionality.Block.BlockPredicate.get(Component, Builder).key("block").defaultOptional();
+            }
+        },
+        StatePropertiesPredicate: {
+            /**
+             * @description This method should always return and not error
+             * @param {Function} Component The Convenient Component Helper (TM)
+             * @param {Function} Builder The Convenient Builder Helper (TM)
+             * @returns {Internal.RecipeComponent} Component that represents a StatePropertiesPredicate
+             */
+            get: (Component, Builder) => {
+                throw new Error("Not implemented");
+            },
+
+            /**
+             * @description This method should always return and not error
+             * @param {Function} Component The Convenient Component Helper (TM)
+             * @param {Function} Builder The Convenient Builder Helper (TM)
+             * @returns {Internal.RecipeKey} Optional key that represents a StatePropertiesPredicate
+             */
+            getKey: (Component, Builder) => {
+                return LycheeSchemaFunctionality.Block.StatePropertiesPredicate.get(Component, Builder).key("state").defaultOptional();
+            }
+        }
+    },
+    Bounds: {
+        IntBounds: {
+            /**
+             * @description This method should always return and not error
+             * @param {Function} Component The Convenient Component Helper (TM)
+             * @param {Function} Builder The Convenient Builder Helper (TM)
+             * @returns {Internal.RecipeComponent} Component that represents an IntBounds
+             */
+            get: (Component, Builder) => {
+                throw new Error("Not implemented");
+            },
+
+            /**
+             * @description This method should always return and not error
+             * @param {Function} Component The Convenient Component Helper (TM)
+             * @param {Function} Builder The Convenient Builder Helper (TM)
+             * @returns {Internal.RecipeKey} Optional key that represents a IntBounds
+             */
+            getKey: (Component, Builder) => {
+                return LycheeSchemaFunctionality.Bounds.IntBounds.get(Component, Builder).key("intbounds").defaultOptional();
+            }
+        },
+        DoubleBounds: {
+            /**
+             * @description This method should always return and not error
+             * @param {Function} Component The Convenient Component Helper (TM)
+             * @param {Function} Builder The Convenient Builder Helper (TM)
+             * @returns {Internal.RecipeComponent} Component that represents a DoubleBounds
+             */
+            get: (Component, Builder) => {
+                throw new Error("Not implemented");
+            },
+
+            /**
+             * @description This method should always return and not error
+             * @param {Function} Component The Convenient Component Helper (TM)
+             * @param {Function} Builder The Convenient Builder Helper (TM)
+             * @returns {Internal.RecipeKey} Optional key that represents a DoubleBounds
+             */
+            getKey: (Component, Builder) => {
+                return LycheeSchemaFunctionality.Bounds.DoubleBounds.get(Component, Builder).key("doublebounds").defaultOptional();
+            }
         }
     }
 }
