@@ -71,8 +71,8 @@ ServerEvents.recipes(event => {
             }
         },
         {
-            type: "drop_item",
-            item: "2x minecraft:wheat"
+            type: "execute",
+            command: "execute as @a run say HELLO HI HELLO"
         }
-    )
+    );
 });

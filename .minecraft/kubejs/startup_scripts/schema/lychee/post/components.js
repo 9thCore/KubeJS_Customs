@@ -31,7 +31,37 @@
 
         all.push(new LycheeSchemaFunctionality.ComplexData(
             "place",
-            LycheeSchemaFunctionality.Validators.alwaysTrue,
+            (key, value) => {
+                switch (key) {
+                    case "block":
+                        return LycheeSchemaFunctionality.Validators.multiType(key, value, ["string", "object"], false);
+                    case "offsetX":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
+                    case "offsetY":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
+                    case "offsetZ":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none
+        ));
+
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "execute",
+            (key, value) => {
+                switch (key) {
+                    case "command":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", false);
+                    case "hide":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "boolean", true);
+                    case "repeat":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "boolean", true);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
             LycheeSchemaFunctionality.DataFixers.none
         ));
 
@@ -46,6 +76,7 @@
      */
     const getAny = (Component, Builder) => {
         const anyString = Component("anyString");
+        const bool = Component("bool");
         const allPostActions = getAll();
 
         const item = Component("registryObject", {registry: "minecraft:item"});
@@ -61,6 +92,9 @@
             anyInt.key("offsetX").defaultOptional(),
             anyInt.key("offsetY").defaultOptional(),
             anyInt.key("offsetZ").defaultOptional(),
+            anyString.key("command").defaultOptional(),
+            bool.key("hide").defaultOptional(),
+            bool.key("repeat").defaultOptional(),
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
 
