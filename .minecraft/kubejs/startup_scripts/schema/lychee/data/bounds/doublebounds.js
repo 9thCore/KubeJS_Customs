@@ -10,7 +10,16 @@
         const bounds = Builder([
             anyDouble.key("min").defaultOptional(),
             anyDouble.key("max").defaultOptional()
-        ])
+        ]).mapIn(object => {
+            if (typeof object === "number") {
+                return {
+                    min: object,
+                    max: object
+                };
+            }
+            
+            return object;
+        });
 
         return bounds;
     }
