@@ -84,10 +84,16 @@ ServerEvents.recipes(event => {
             },
             {
                 type: "if",
-                then: {
-                    type: "execute",
-                    command: "execute as @a run say Passed!"
-                },
+                then: [
+                    {
+                        type: "execute",
+                        command: "execute as @a run say Passed!"
+                    },
+                    {
+                        type: "explode",
+                        block_interaction: "keep"
+                    }
+                ],
                 else: {
                     type: "execute",
                     command: "execute as @a run say Did not pass!"

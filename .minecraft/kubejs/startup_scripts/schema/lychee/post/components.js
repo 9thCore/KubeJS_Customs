@@ -121,6 +121,28 @@
             ["then", "else"]
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "explode",
+            (key, value) => {
+                switch (key) {
+                    case "offsetX":
+                    case "offsetY":
+                    case "offsetZ":
+                    case "radius":
+                    case "radius_step":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
+                    case "fire":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "boolean", true);
+                    case "block_interaction":
+                        return LycheeSchemaFunctionality.Validators.oneOf(key, value, [undefined, "keep", "destroy", "destroy_with_decay"]);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["offsetX", "offsetY", "offsetZ", "fire", "block_interaction", "radius", "radius_step"]
+        ));
+
         return all;
     }
 
@@ -138,6 +160,7 @@
         const item = Component("registryObject", {registry: "minecraft:item"});
         const count = Component("intNumberRange", {min: 1});
         const anyInt = Component("anyIntNumber");
+        const anyDouble = Component("anyDoubleNumber");
 
         const possibleValues = Builder([
             anyString.key("type"),
@@ -154,6 +177,10 @@
             count.key("xp").defaultOptional(),
             LycheeSchemaFunctionality.Bounds.IntBounds.get(Component, Builder).key("rolls").defaultOptional(),
             anyInt.key("empty_weight").defaultOptional(),
+            bool.key("fire").defaultOptional(),
+            anyString.key("block_interaction").defaultOptional(),
+            anyDouble.key("radius").defaultOptional(),
+            anyDouble.key("radius_step").defaultOptional(),
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
 
