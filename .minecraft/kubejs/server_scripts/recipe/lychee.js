@@ -94,10 +94,16 @@ ServerEvents.recipes(event => {
                         block_interaction: "keep"
                     }
                 ],
-                else: {
-                    type: "execute",
-                    command: "execute as @a run say Did not pass!"
-                },
+                else: [
+                    {
+                        type: "execute",
+                        command: "execute as @a run say Did not pass!"
+                    },
+                    {
+                        type: "hurt",
+                        damage: 5
+                    }
+                ],
                 contextual: {
                     type: "weather",
                     weather: "clear"

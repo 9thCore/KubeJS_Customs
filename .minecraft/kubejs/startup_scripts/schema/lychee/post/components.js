@@ -143,6 +143,22 @@
             ["offsetX", "offsetY", "offsetZ", "fire", "block_interaction", "radius", "radius_step"]
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "hurt",
+            (key, value) => {
+                switch (key) {
+                    case "damage":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "object", false);
+                    case "source":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", true);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["damage", "source"]
+        ));
+
         return all;
     }
 
@@ -181,6 +197,8 @@
             anyString.key("block_interaction").defaultOptional(),
             anyDouble.key("radius").defaultOptional(),
             anyDouble.key("radius_step").defaultOptional(),
+            LycheeSchemaFunctionality.Bounds.DoubleBounds.get(Component, Builder).key("damage").defaultOptional(),
+            anyString.key("source").defaultOptional(),
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
 
