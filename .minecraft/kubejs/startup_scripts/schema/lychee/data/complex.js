@@ -1,10 +1,4 @@
 (function() {
-    const KEY_TYPE = "type";
-    const INTERNALKEY_PARENT = "__parent";
-    const INTERNALKEY_KEY = "__key";
-    const INTERNALKEY_ISRECURSIVE = "__isrecursive";
-    const INTERNALKEY_DATA = "__data";
-
     /**
      * @constructor
      * @param {string} id ID of the object
@@ -77,15 +71,15 @@
 
         let dataIndex = -1;
         for (let index in allComplexData) {
-            if (allComplexData[index].id === object[KEY_TYPE]) {
+            if (allComplexData[index].id === object[LycheeSchemaFunctionality.Constants.Keys.TYPE]) {
                 dataIndex = index;
                 break;
             }
         }
 
         if (dataIndex < 0) {
-            if (KEY_TYPE in object) {
-                console.SERVER.error(`"${object[KEY_TYPE]}" is not a valid ${dataTypeName} type. Must be one of ${ComplexData.listPossibleIDs(allComplexData)}`);
+            if (LycheeSchemaFunctionality.Constants.Keys.TYPE in object) {
+                console.SERVER.error(`"${object[LycheeSchemaFunctionality.Constants.Keys.TYPE]}" is not a valid ${dataTypeName} type. Must be one of ${ComplexData.listPossibleIDs(allComplexData)}`);
             } else {
                 console.SERVER.error(`A ${dataTypeName} must have a type, one of ${ComplexData.listPossibleIDs(allComplexData)}`);
             }
@@ -95,22 +89,22 @@
         const parentIndex = data.length;
         data.push(object);
 
-        for (let {key, isArray} of recursiveKeysGetter(object[KEY_TYPE])) {
+        for (let {key, isArray} of recursiveKeysGetter(object[LycheeSchemaFunctionality.Constants.Keys.TYPE])) {
             if (key in object) {
                 let value = object[key];
                 if (Array.isArray(value)) {
                     for (let entry of value) {
                         let o = ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, entry, depth + 1);
-                        o[INTERNALKEY_PARENT] = parentIndex;
-                        o[INTERNALKEY_KEY] = key;
+                        o[LycheeSchemaFunctionality.Constants.InternalKeys.PARENT] = parentIndex;
+                        o[LycheeSchemaFunctionality.Constants.InternalKeys.KEY] = key;
                     }
                 } else {
                     let o = ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, value, depth + 1);
-                    o[INTERNALKEY_PARENT] = parentIndex;
-                    o[INTERNALKEY_KEY] = key;
+                    o[LycheeSchemaFunctionality.Constants.InternalKeys.PARENT] = parentIndex;
+                    o[LycheeSchemaFunctionality.Constants.InternalKeys.KEY] = key;
                 }
 
-                object[INTERNALKEY_ISRECURSIVE] = true;
+                object[LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE] = true;
             }
             object[key] = isArray ? [] : {};
         }
@@ -136,10 +130,10 @@
         const anyString = Component("anyString");
         const bool = Component("bool");
 
-        newValues.add(anyInt.key(INTERNALKEY_PARENT).defaultOptional());
-        newValues.add(anyString.key(INTERNALKEY_KEY).defaultOptional());
-        newValues.add(bool.key(INTERNALKEY_ISRECURSIVE).defaultOptional());
-        newValues.add(newValues.createCopy().asArray().key(INTERNALKEY_DATA).defaultOptional());
+        newValues.add(anyInt.key(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT).defaultOptional());
+        newValues.add(anyString.key(LycheeSchemaFunctionality.Constants.InternalKeys.KEY).defaultOptional());
+        newValues.add(bool.key(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE).defaultOptional());
+        newValues.add(newValues.createCopy().asArray().key(LycheeSchemaFunctionality.Constants.InternalKeys.DATA).defaultOptional());
 
         const recipeComponent = newValues.mapIn(object => {
             // Translate recursion into a simple array
@@ -147,9 +141,9 @@
             ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, object, 0);
 
             // We've explored the nested data and have judged whether it makes sense to employ this tactic
-            if (object[INTERNALKEY_ISRECURSIVE]) {
+            if (object[LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE]) {
                 data.shift(); // Discard first entry, as it's the current object and we don't want a StackOverflow
-                object[INTERNALKEY_DATA] = data;
+                object[LycheeSchemaFunctionality.Constants.InternalKeys.DATA] = data;
             }
 
             return object;
@@ -160,11 +154,11 @@
             }
 
             // This object isn't recursive, so don't bother with anything else
-            if (!json.has(INTERNALKEY_ISRECURSIVE) || !json.get(INTERNALKEY_ISRECURSIVE).getAsBoolean()) {
+            if (!json.has(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE) || !json.get(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE).getAsBoolean()) {
                 return json;
             }
 
-            const oldData = json.get(INTERNALKEY_DATA).getAsJsonArray();
+            const oldData = json.get(LycheeSchemaFunctionality.Constants.InternalKeys.DATA).getAsJsonArray();
 
             /** @type {Internal.JsonArray} */
             const data = new LycheeSchemaFunctionality.LoadedClasses.$JsonArray();
@@ -174,9 +168,9 @@
             data.addAll(oldData);
 
             for (const entry of oldData) {
-                if (entry.has(INTERNALKEY_PARENT) && entry.has(INTERNALKEY_KEY)) {
-                    let parent = data.get(entry.get(INTERNALKEY_PARENT).getAsInt());
-                    let key = entry.get(INTERNALKEY_KEY).getAsString();
+                if (entry.has(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT) && entry.has(LycheeSchemaFunctionality.Constants.InternalKeys.KEY)) {
+                    let parent = data.get(entry.get(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT).getAsInt());
+                    let key = entry.get(LycheeSchemaFunctionality.Constants.InternalKeys.KEY).getAsString();
 
                     if (!parent.isJsonObject()) {
                         console.SERVER.error(`Internal error: Parent ${parent} is not a JsonObject! Report this forward, please`);
@@ -184,15 +178,15 @@
                     }
 
                     let parentJSONObject = parent.getAsJsonObject();
-                    let [{isArray}] = recursiveKeysGetter(parentJSONObject.get(KEY_TYPE).getAsString());
+                    let [{isArray}] = recursiveKeysGetter(parentJSONObject.get(LycheeSchemaFunctionality.Constants.Keys.TYPE).getAsString());
 
                     if (isArray && !parentJSONObject.has(key)) {
                         parentJSONObject.add(key, new LycheeSchemaFunctionality.LoadedClasses.$JsonArray());
                     }
 
-                    entry.remove(INTERNALKEY_PARENT);
-                    entry.remove(INTERNALKEY_KEY);
-                    entry.remove(INTERNALKEY_ISRECURSIVE);
+                    entry.remove(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT);
+                    entry.remove(LycheeSchemaFunctionality.Constants.InternalKeys.KEY);
+                    entry.remove(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE);
 
                     if (isArray) {
                         parent.get(key).getAsJsonArray()["add(com.google.gson.JsonElement)"](entry); 
@@ -202,9 +196,9 @@
                 }
             }
 
-            json.remove(INTERNALKEY_PARENT);
-            json.remove(INTERNALKEY_ISRECURSIVE);
-            json.remove(INTERNALKEY_DATA);
+            json.remove(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT);
+            json.remove(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE);
+            json.remove(LycheeSchemaFunctionality.Constants.InternalKeys.DATA);
 
             return data.get(0);
         });

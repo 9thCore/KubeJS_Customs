@@ -63,7 +63,7 @@
             Component("filteredString", {
                 filter: s => s === "lychee:always_true",
                 error: `Key type must be "lychee:always_true"`
-            }).key("type")
+            }).key(LycheeSchemaFunctionality.Constants.Keys.TYPE)
         );
 
         // hnngg....
@@ -113,6 +113,7 @@
  * An object that includes all other Lychee recipe schema related objects, such that they don't end up flooding the startup script environment
  * @type {object}
  * @property {object} Constants - Variety of constants
+ * @property {object} Constants.Keys - Common keys that should be exposed
  * @property {object} Constants.InternalKeys - Keys not meant to be used by end users
  * @property {number} MaxDepth - Maximum depth that recursive searches can go for
  * @property {object} LoadedClasses - Object that hosts utility Java classes for use in various components
@@ -133,8 +134,15 @@
  */
 const LycheeSchemaFunctionality = {
     Constants: {
+        Keys: {
+            TYPE: "type"
+        },
         InternalKeys: {
-            SPECIALHANDLING: "__specialhandling"
+            SPECIALHANDLING: "__specialhandling",
+            PARENT: "__parent",
+            KEY: "__key",
+            ISRECURSIVE: "__isrecursive",
+            DATA: "__data"
         }
     },
     MaxDepth: 0,

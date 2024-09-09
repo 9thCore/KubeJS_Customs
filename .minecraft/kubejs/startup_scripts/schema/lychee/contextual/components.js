@@ -76,7 +76,7 @@
         const chance = Component("floatNumberRange", {min: 0.0, max: 1.0});
 
         const possibleValues = Builder([
-            anyString.key("type"),
+            anyString.key(LycheeSchemaFunctionality.Constants.Keys.TYPE),
             anyString.key("weather").defaultOptional(),
             boolean.key("secret").defaultOptional(),
             anyString.key("description").defaultOptional()

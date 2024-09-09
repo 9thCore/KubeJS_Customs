@@ -346,7 +346,7 @@
         const patchValue = bool.or(anyInt).or(anyLong).or(anyFloat).or(anyDouble).or(anyString);
 
         const possibleValues = Builder([
-            anyString.key("type"),
+            anyString.key(LycheeSchemaFunctionality.Constants.Keys.TYPE),
             item.key("item").defaultOptional(),
             count.key("count").defaultOptional(),
             LycheeSchemaFunctionality.NBTComponent.getOrString(Component).key("nbt").defaultOptional(),
