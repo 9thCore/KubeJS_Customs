@@ -85,6 +85,18 @@
         return Validators.forEveryEntry(key, value, (i, o) => Validators.type(`${key}[${i}]`, o, type, acceptUndefined));
     }
 
+    /**
+     * @description A validator that passes if every entry in the given array is of the expected type
+     * @param {string} key 
+     * @param {object[]} value 
+     * @param {("bigint"|"boolean"|"function"|"number"|"object"|"string"|"symbol"|"undefined")[]} types 
+     * @param {boolean} acceptUndefined
+     * @returns {[boolean, string]}
+     */
+    Validators.forEveryEntryMultiType = (key, value, types, acceptUndefined) => {
+        return Validators.forEveryEntry(key, value, (i, o) => Validators.multiType(`${key}[${i}]`, o, types, acceptUndefined));
+    }
+
     StartupEvents.init(() => {
         LycheeSchemaFunctionality.Validators = Validators;
     });

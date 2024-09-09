@@ -56,18 +56,12 @@ ServerEvents.recipes(event => {
                     type: "and",
                     contextual: [
                         {
-                            type: "not",
-                            contextual: {
-                                type: "weather",
-                                weather: "clear"
-                            }
+                            type: "difficulty",
+                            difficulty: [0, "easy"]
                         },
                         {
-                            type: "not",
-                            contextual: {
-                                type: "weather",
-                                weather: "thunder"
-                            }
+                            type: "weather",
+                            weather: "thunder"
                         }
                     ]
                 },

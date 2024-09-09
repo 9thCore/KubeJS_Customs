@@ -58,6 +58,53 @@
             ["contextual"]
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "chance",
+            (key, value) => {
+                switch (key) {
+                    case "chance":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", false);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["chance"]
+        ));
+
+        /*
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "location",
+            (key, value) => {
+                switch (key) {
+                    case "chance":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", false);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["offsetX", "offsetY", "offsetZ", "predicate"]
+        ));
+        */
+
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "difficulty",
+            (key, value) => {
+                switch (key) {
+                    case "difficulty":
+                        if (Array.isArray(value)) {
+                            return LycheeSchemaFunctionality.Validators.forEveryEntryMultiType(key, value, ["string", "number"], false);
+                        }
+                        return LycheeSchemaFunctionality.Validators.multiType(key, value, ["string", "number"], false);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["difficulty"]
+        ));
+
         return all;
     }
 
@@ -75,11 +122,19 @@
         const boolean = Component("bool");
         const chance = Component("floatNumberRange", {min: 0.0, max: 1.0});
 
+        const difficultyString = Component("filteredString", {
+            filter: s => ["peaceful", "easy", "normal", "hard"].includes(s),
+            error: `Difficulty must be one of "peaceful" | "easy" | "normal" | "hard"`
+        })
+        const difficulty = anyInt.or(difficultyString);
+
         const possibleValues = Builder([
             anyString.key(LycheeSchemaFunctionality.Constants.Keys.TYPE),
             anyString.key("weather").defaultOptional(),
             boolean.key("secret").defaultOptional(),
-            anyString.key("description").defaultOptional()
+            anyString.key("description").defaultOptional(),
+            chance.key("chance").defaultOptional(),
+            difficulty.asArrayOrSelf().key("difficulty").defaultOptional()
         ]);
 
         return LycheeSchemaFunctionality.ComplexData.prepareDataArray(Component, "ContextualCondition", type => {
