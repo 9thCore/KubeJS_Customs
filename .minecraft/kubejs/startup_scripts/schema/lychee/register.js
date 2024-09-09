@@ -117,7 +117,8 @@
  */
 const LycheeSchemaFunctionality = {
     LoadedClasses: {
-        $JsonPrimitive: Java.loadClass("com.google.gson.JsonPrimitive")
+        $JsonPrimitive: Java.loadClass("com.google.gson.JsonPrimitive"),
+        $JsonArray: Java.loadClass("com.google.gson.JsonArray")
     },
     PostActions: {
         /**

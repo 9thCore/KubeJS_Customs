@@ -87,7 +87,7 @@
             (key, value) => {
                 switch (key) {
                     case "rolls":
-                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", false);
+                        return LycheeSchemaFunctionality.Validators.multiType(key, value, ["number", "object"], false);
                     case "entries":
                         if (!Array.isArray(value)) {
                             return LycheeSchemaFunctionality.Validators.type(key, value, "array", false);
@@ -354,33 +354,16 @@
             LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
         ]);
 
-        possibleValues.add(possibleValues.asArray().key("entries").defaultOptional());
-        possibleValues.add(possibleValues.asArrayOrSelf().key("then").defaultOptional());
-        possibleValues.add(possibleValues.asArrayOrSelf().key("else").defaultOptional());
-
-        const postAny = possibleValues.mapIn(object => {
-            if (typeof object !== "object") {
-                console.SERVER.error(`A Post Action must be an object`);
-                return null;
+        return LycheeSchemaFunctionality.ComplexData.prepareDataArray(Component, "PostAction", type => {
+            switch (type) {
+                case "random":
+                    return [{key: "entries", isArray: true}];
+                case "if":
+                    return [{key: "then", isArray: true}, {key: "else", isArray: true}];
+                default:
+                    return [];
             }
-
-            for (const post of allPostActions) {
-                if (post.id === object.type) {
-                    // Found Post Action, do stuff
-                    return post.handler.call(null, object);
-                }
-            }
-
-            if ("type" in object) {
-                console.SERVER.error(`"${object.type}" is not a valid Post Action type. Must be one of ${LycheeSchemaFunctionality.ComplexData.listPossibleIDs(allPostActions)}`);
-            } else {
-                console.SERVER.error(`A Post Action must have a type, one of ${LycheeSchemaFunctionality.ComplexData.listPossibleIDs(allPostActions)}`);
-            }
-            
-            return null;
-        });
-
-        return postAny.asArrayOrSelf();
+        }, possibleValues, allPostActions);
     };
 
     StartupEvents.init(() => {

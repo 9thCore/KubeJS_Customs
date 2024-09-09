@@ -31,7 +31,7 @@
         return object => {
             if (!(itemKey in object)) {
                 console.SERVER.error(`FATAL: No Item ID or ItemStack provided to ${itemKey}`);
-                return null;
+                throw new Error("No item");
             }
 
             if (object[itemKey] instanceof $ItemStack) {

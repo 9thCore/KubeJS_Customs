@@ -8,7 +8,7 @@
         switch (key) {
             case "contextual":
                 if (Array.isArray(value) !== isArray) {
-                    return LycheeSchemaFunctionality.Validators.alwaysFalse(`Key ${key} ${isArray ? "must" : "cannot"} be an array for this Contextual Condition!`);
+                    return LycheeSchemaFunctionality.Validators.alwaysFalse(`Key ${key} ${isArray ? "must" : "cannot"} be an array for this ContextualCondition!`);
                 }
                 return LycheeSchemaFunctionality.Validators.type(key, value, "object", false);
             default:
@@ -69,6 +69,7 @@
      */
     const getAny = (Component, Builder) => {
         const anyString = Component("anyString");
+        const anyInt = Component("anyIntNumber");
         const allContextual = getAll();
 
         const boolean = Component("bool");
@@ -81,32 +82,17 @@
             anyString.key("description").defaultOptional()
         ]);
 
-        // Allow recursive conditions for types like "not"
-        possibleValues.add(possibleValues.asArrayOrSelf().key("contextual").defaultOptional());
-
-        const contextualAny = possibleValues.mapIn(object => {
-            if (typeof object !== "object") {
-                console.SERVER.error(`A Contextual Condition must be an object`);
-                return null;
+        return LycheeSchemaFunctionality.ComplexData.prepareDataArray(Component, "ContextualCondition", type => {
+            switch (type) {
+                case "and":
+                case "or":
+                    return [{key: "contextual", isArray: true}];
+                case "not":
+                    return [{key: "contextual", isArray: false}];
+                default:
+                    return [];
             }
-
-            for (const contextual of allContextual) {
-                if (contextual.id === object.type) {
-                    // Found Contextual Condition, do stuff
-                    return contextual.handler.call(null, object);
-                }
-            }
-
-            if ("type" in object) {
-                console.SERVER.error(`"${object.type}" is not a valid Contextual Condition type. Must be one of ${LycheeSchemaFunctionality.ComplexData.listPossibleIDs(allContextual)}`);
-            } else {
-                console.SERVER.error(`A Contextual Condition must have a type, one of ${LycheeSchemaFunctionality.ComplexData.listPossibleIDs(allContextual)}`);
-            }
-            
-            return null;
-        });
-
-        return contextualAny.asArrayOrSelf();
+        }, possibleValues, allContextual);
     }
 
     StartupEvents.init(() => {
