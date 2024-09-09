@@ -1,4 +1,13 @@
 (function() {
+    /**
+     * Maximum depth that searches can go for.
+     * Increasing or decreasing will have no static change on the performance,
+     * but too high a value might trigger a StackOverflow.
+     * 
+     * Should you really be nesting more than 20 deep, anyway?
+     */
+    const MAX_DEPTH = 20;
+
     const $RecipeSchema = Java.loadClass("dev.latvian.mods.kubejs.recipe.schema.RecipeSchema");
     const commonProperties = []; // Set inside of the registry event
 
@@ -94,11 +103,16 @@
 
         register(event, "lychee:block_interacting", [specialItemKey, blockInKey]);
     });
+
+    StartupEvents.init(() => {
+        LycheeSchemaFunctionality.MaxDepth = MAX_DEPTH;
+    })
 })();
 
 /**
  * An object that includes all other Lychee recipe schema related objects, such that they don't end up flooding the startup script environment
  * @type {object}
+ * @property {number} MaxDepth - Maximum depth that recursive searches can go for
  * @property {object} LoadedClasses - Object that hosts utility Java classes for use in various components
  * @property {object} PostActions - Object that provides interfacing with Lychee recipe Post Actions
  * @property {object} ContextualConditions - Object that provides interfacing with Lychee recipe Contextual Conditions
@@ -116,6 +130,7 @@
  * @property {object} Bounds.DoubleBounds - Object that provides interfacing with DoubleBounds, particularly getting a Recipe Component representing it
  */
 const LycheeSchemaFunctionality = {
+    MaxDepth: 0,
     LoadedClasses: {
         $JsonPrimitive: Java.loadClass("com.google.gson.JsonPrimitive"),
         $JsonArray: Java.loadClass("com.google.gson.JsonArray")

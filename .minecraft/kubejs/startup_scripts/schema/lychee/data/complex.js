@@ -59,9 +59,17 @@
      * @param {string} dataTypeName 
      * @param {Function} recursiveKeysGetter Getter of all keys that should be considered recursive; expected input: string, expected output: {key: string, isArray: boolean}[]
      * @param {{id: string, handler: Function}[]} allComplexData 
+     * @param {object} object
+     * @param {number} depth 
      * @returns {Internal.MappingRecipeComponent}
      */
-    ComplexData.recursiveExploration = (data, dataTypeName, recursiveKeysGetter, allComplexData, object) => {
+    ComplexData.recursiveExploration = (data, dataTypeName, recursiveKeysGetter, allComplexData, object, depth) => {
+        // Arbitrary depth limit
+        if (depth > LycheeSchemaFunctionality.MaxDepth) {
+            console.SERVER.error(`Exceeded maximum depth of ${LycheeSchemaFunctionality.MaxDepth}! If you know what you're doing, you can increase it by modifying lychee/register.js. Otherwise, maybe nest less!`);
+            throw new Error("Exceeded depth limit");
+        }
+
         if (typeof object !== "object") {
             console.SERVER.error(`A ${dataTypeName} must be an object`);
             throw new Error("Invalid type");
@@ -92,12 +100,12 @@
                 let value = object[key];
                 if (Array.isArray(value)) {
                     for (let entry of value) {
-                        let o = ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, entry);
+                        let o = ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, entry, depth + 1);
                         o[INTERNALKEY_PARENT] = parentIndex;
                         o[INTERNALKEY_KEY] = key;
                     }
                 } else {
-                    let o = ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, value);
+                    let o = ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, value, depth + 1);
                     o[INTERNALKEY_PARENT] = parentIndex;
                     o[INTERNALKEY_KEY] = key;
                 }
@@ -136,7 +144,7 @@
         const recipeComponent = newValues.mapIn(object => {
             // Translate recursion into a simple array
             const data = [];
-            ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, object);
+            ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, object, 0);
 
             // We've explored the nested data and have judged whether it makes sense to employ this tactic
             if (object[INTERNALKEY_ISRECURSIVE]) {
