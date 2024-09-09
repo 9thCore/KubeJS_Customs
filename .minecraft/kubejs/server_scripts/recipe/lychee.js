@@ -94,12 +94,10 @@ ServerEvents.recipes(event => {
             {
                 type: "prevent_default"
             },
-            /*
             {
                 type: "damage_item",
                 damage: 2.5
             },
-            */
             {
                 type: "random",
                 rolls: 3,
@@ -128,12 +126,10 @@ ServerEvents.recipes(event => {
                         type: "execute",
                         command: "execute as @a run say Did not pass!"
                     },
-                    /*
                     {
                         type: "hurt",
                         damage: 5
                     },
-                    */
                     {
                         type: "cycle_state_property",
                         block: "minecraft:wheat",

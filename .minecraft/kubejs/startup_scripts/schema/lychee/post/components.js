@@ -148,7 +148,7 @@
             (key, value) => {
                 switch (key) {
                     case "damage":
-                        return LycheeSchemaFunctionality.Validators.type(key, value, "object", false);
+                        return LycheeSchemaFunctionality.Validators.multiType(key, value, ["number", "object"], false);
                     case "source":
                         return LycheeSchemaFunctionality.Validators.type(key, value, "string", true);
                     default:
@@ -253,7 +253,16 @@
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
-            LycheeSchemaFunctionality.DataFixers.none,
+            // hngn gnnghgh
+            object => {
+                const o = {
+                    min: object.damage,
+                    max: object.damage
+                };
+                o[LycheeSchemaFunctionality.Constants.InternalKeys.SPECIALHANDLING] = true;
+                object.damage = o;
+                return object;
+            },
             ["damage", "target"]
         ));
 
@@ -318,6 +327,21 @@
         const anyLong = Component("anyLongNumber");
         const anyFloat = Component("anyFloatNumber");
 
+        const doubleBounds = LycheeSchemaFunctionality.Bounds.DoubleBounds.get(Component, Builder);
+
+        // this key can't decide whether it wants to be an integer or a DoubleBounds, so perform special handling on it
+        const damage = doubleBounds.mapOut(/** @param {Internal.JsonObject} json */ json => {
+            if (json.has(LycheeSchemaFunctionality.Constants.InternalKeys.SPECIALHANDLING)) {
+                json.remove(LycheeSchemaFunctionality.Constants.InternalKeys.SPECIALHANDLING);
+                // Assume it should be an integer due to the SPECIALHANDLING key
+                const value = Math.floor(json.get("min").getAsDouble());
+                // Grab the constructor explicitly using a number
+                return new LycheeSchemaFunctionality.LoadedClasses.$JsonPrimitive["(java.lang.Number)"](value);
+            }
+
+            return json;
+        });
+
         // just nbt
         const patchValue = bool.or(anyInt).or(anyLong).or(anyFloat).or(anyDouble).or(anyString);
 
@@ -340,7 +364,7 @@
             anyString.key("block_interaction").defaultOptional(),
             anyDouble.key("radius").defaultOptional(),
             anyDouble.key("radius_step").defaultOptional(),
-            LycheeSchemaFunctionality.Bounds.DoubleBounds.get(Component, Builder).or(anyInt).key("damage").defaultOptional(),
+            damage.key("damage").defaultOptional(),
             anyString.key("source").defaultOptional(),
             anyDouble.key("chance").defaultOptional(),
             anyDouble.key("s").defaultOptional(),
@@ -351,7 +375,8 @@
             anyString.key("path").defaultOptional(),
             anyString.key("from").defaultOptional(),
             patchValue.key("value").defaultOptional(),
-            LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
+            LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder),
+            bool.key(LycheeSchemaFunctionality.Constants.InternalKeys.SPECIALHANDLING).defaultOptional()
         ]);
 
         return LycheeSchemaFunctionality.ComplexData.prepareDataArray(Component, "PostAction", type => {

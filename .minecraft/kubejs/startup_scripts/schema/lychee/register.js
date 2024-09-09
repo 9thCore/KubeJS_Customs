@@ -112,6 +112,8 @@
 /**
  * An object that includes all other Lychee recipe schema related objects, such that they don't end up flooding the startup script environment
  * @type {object}
+ * @property {object} Constants - Variety of constants
+ * @property {object} Constants.InternalKeys - Keys not meant to be used by end users
  * @property {number} MaxDepth - Maximum depth that recursive searches can go for
  * @property {object} LoadedClasses - Object that hosts utility Java classes for use in various components
  * @property {object} PostActions - Object that provides interfacing with Lychee recipe Post Actions
@@ -130,6 +132,11 @@
  * @property {object} Bounds.DoubleBounds - Object that provides interfacing with DoubleBounds, particularly getting a Recipe Component representing it
  */
 const LycheeSchemaFunctionality = {
+    Constants: {
+        InternalKeys: {
+            SPECIALHANDLING: "__specialhandling"
+        }
+    },
     MaxDepth: 0,
     LoadedClasses: {
         $JsonPrimitive: Java.loadClass("com.google.gson.JsonPrimitive"),
