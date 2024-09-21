@@ -72,6 +72,20 @@
             ["chance"]
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "custom",
+            (key, value) => {
+                switch (key) {
+                    case "id":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", false);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["id"]
+        ));
+
         /*
         all.push(new LycheeSchemaFunctionality.ComplexData(
             "location",
@@ -115,39 +129,8 @@
      * @returns {Internal.RecipeComponent} Combination of all possible Contextual Conditions
      */
     const getAny = (Component, Builder) => {
-        const anyString = Component("anyString");
-        const anyInt = Component("anyIntNumber");
         const allContextual = getAll();
-
-        const boolean = Component("bool");
-        const chance = Component("floatNumberRange", {min: 0.0, max: 1.0});
-
-        const difficultyString = Component("filteredString", {
-            filter: s => ["peaceful", "easy", "normal", "hard"].includes(s),
-            error: `Difficulty must be one of "peaceful" | "easy" | "normal" | "hard"`
-        })
-        const difficulty = anyInt.or(difficultyString);
-
-        const possibleValues = Builder([
-            anyString.key(LycheeSchemaFunctionality.Constants.Keys.TYPE),
-            anyString.key("weather").defaultOptional(),
-            boolean.key("secret").defaultOptional(),
-            anyString.key("description").defaultOptional(),
-            chance.key("chance").defaultOptional(),
-            difficulty.asArrayOrSelf().key("difficulty").defaultOptional()
-        ]);
-
-        return LycheeSchemaFunctionality.ComplexData.prepareDataArray(Component, "ContextualCondition", type => {
-            switch (type) {
-                case "and":
-                case "or":
-                    return [{key: "contextual", isArray: true}];
-                case "not":
-                    return [{key: "contextual", isArray: false}];
-                default:
-                    return [];
-            }
-        }, possibleValues, allContextual);
+        return LycheeSchemaFunctionality.ComplexData.handle(Component, allContextual, []);
     }
 
     StartupEvents.init(() => {

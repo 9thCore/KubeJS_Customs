@@ -78,6 +78,46 @@
                 DataFixers.nbt(object[key]);
             }
         }
+        return object;
+    }
+
+    /**
+     * @description Apply a datafixer to the current object, treating it as a block
+     * @param {object} block 
+     * @returns {object} Modified object
+     */
+    DataFixers.blockRaw = block => {
+        if (typeof block === "string") {
+            if (block === "*") {
+                return block;
+            } else if (block.startsWith("#")) {
+                return {
+                    tag: block.substring(1)
+                };
+            }
+
+            return {
+                blocks: [block]
+            };
+        }
+
+        if (block.nbt !== undefined) {
+            block.nbt = JsonIO.parseRaw(DataFixers.nbt(block.nbt)).toString();
+        }
+
+        return block;
+    }
+
+    /**
+     * @description Apply a datafixer to a subobject of the current object, treating it as a block
+     * @param {string} key Key of the block object in the object
+     * @returns {Function} Data fixer focusing on blocks; handles the NBT
+     */
+    DataFixers.block = key => {
+        return object => {
+            object[key] = DataFixers.blockRaw(object[key]);
+            return object;
+        };
     }
 
     StartupEvents.init(() => {

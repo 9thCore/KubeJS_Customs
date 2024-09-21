@@ -46,7 +46,7 @@
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
-            LycheeSchemaFunctionality.DataFixers.none,
+            LycheeSchemaFunctionality.DataFixers.block("block"),
             ["block", "offsetX", "offsetY", "offsetZ"]
         ));
 
@@ -253,16 +253,7 @@
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
             },
-            // hngn gnnghgh
-            object => {
-                const o = {
-                    min: object.damage,
-                    max: object.damage
-                };
-                o[LycheeSchemaFunctionality.Constants.InternalKeys.SPECIALHANDLING] = true;
-                object.damage = o;
-                return object;
-            },
+            LycheeSchemaFunctionality.DataFixers.none,
             ["damage", "target"]
         ));
 
@@ -316,79 +307,8 @@
      * @returns {Internal.RecipeComponent} Combination of all possible Post Actions
      */
     const getAny = (Component, Builder) => {
-        const anyString = Component("anyString");
-        const bool = Component("bool");
         const allPostActions = getAll();
-
-        const item = Component("registryObject", {registry: "minecraft:item"});
-        const count = Component("intNumberRange", {min: 1});
-        const anyInt = Component("anyIntNumber");
-        const anyDouble = Component("anyDoubleNumber");
-        const anyLong = Component("anyLongNumber");
-        const anyFloat = Component("anyFloatNumber");
-
-        const doubleBounds = LycheeSchemaFunctionality.Bounds.DoubleBounds.get(Component, Builder);
-
-        // this key can't decide whether it wants to be an integer or a DoubleBounds, so perform special handling on it
-        const damage = doubleBounds.mapOut(/** @param {Internal.JsonObject} json */ json => {
-            if (json.has(LycheeSchemaFunctionality.Constants.InternalKeys.SPECIALHANDLING)) {
-                json.remove(LycheeSchemaFunctionality.Constants.InternalKeys.SPECIALHANDLING);
-                // Assume it should be an integer due to the SPECIALHANDLING key
-                const value = Math.floor(json.get("min").getAsDouble());
-                // Grab the constructor explicitly using a number
-                return new LycheeSchemaFunctionality.LoadedClasses.$JsonPrimitive["(java.lang.Number)"](value);
-            }
-
-            return json;
-        });
-
-        // just nbt
-        const patchValue = bool.or(anyInt).or(anyLong).or(anyFloat).or(anyDouble).or(anyString);
-
-        const possibleValues = Builder([
-            anyString.key(LycheeSchemaFunctionality.Constants.Keys.TYPE),
-            item.key("item").defaultOptional(),
-            count.key("count").defaultOptional(),
-            LycheeSchemaFunctionality.NBTComponent.getOrString(Component).key("nbt").defaultOptional(),
-            LycheeSchemaFunctionality.Block.BlockPredicate.getKey(Component, Builder),
-            anyInt.key("offsetX").defaultOptional(),
-            anyInt.key("offsetY").defaultOptional(),
-            anyInt.key("offsetZ").defaultOptional(),
-            anyString.key("command").defaultOptional(),
-            bool.key("hide").defaultOptional(),
-            bool.key("repeat").defaultOptional(),
-            count.key("xp").defaultOptional(),
-            LycheeSchemaFunctionality.Bounds.IntBounds.get(Component, Builder).key("rolls").defaultOptional(),
-            anyInt.key("empty_weight").defaultOptional(),
-            bool.key("fire").defaultOptional(),
-            anyString.key("block_interaction").defaultOptional(),
-            anyDouble.key("radius").defaultOptional(),
-            anyDouble.key("radius_step").defaultOptional(),
-            damage.key("damage").defaultOptional(),
-            anyString.key("source").defaultOptional(),
-            anyDouble.key("chance").defaultOptional(),
-            anyDouble.key("s").defaultOptional(),
-            anyDouble.key("factor").defaultOptional(),
-            anyString.key("property").defaultOptional(),
-            anyString.key("target").defaultOptional(),
-            anyString.key("op").defaultOptional(),
-            anyString.key("path").defaultOptional(),
-            anyString.key("from").defaultOptional(),
-            patchValue.key("value").defaultOptional(),
-            LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder),
-            bool.key(LycheeSchemaFunctionality.Constants.InternalKeys.SPECIALHANDLING).defaultOptional()
-        ]);
-
-        return LycheeSchemaFunctionality.ComplexData.prepareDataArray(Component, "PostAction", type => {
-            switch (type) {
-                case "random":
-                    return [{key: "entries", isArray: true}];
-                case "if":
-                    return [{key: "then", isArray: true}, {key: "else", isArray: true}];
-                default:
-                    return [];
-            }
-        }, possibleValues, allPostActions);
+        return LycheeSchemaFunctionality.ComplexData.handle(Component, allPostActions);
     };
 
     StartupEvents.init(() => {

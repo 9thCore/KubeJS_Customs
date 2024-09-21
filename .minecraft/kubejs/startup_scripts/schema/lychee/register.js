@@ -138,11 +138,12 @@ const LycheeSchemaFunctionality = {
             TYPE: "type"
         },
         InternalKeys: {
-            SPECIALHANDLING: "__specialhandling",
             PARENT: "__parent",
             KEY: "__key",
             ISRECURSIVE: "__isrecursive",
-            DATA: "__data"
+            DATA: "__data",
+            PRIMITIVE: "__primitive",
+            FROMARRAY: "__fromarray"
         }
     },
     MaxDepth: 0,

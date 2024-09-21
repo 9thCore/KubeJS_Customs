@@ -48,162 +48,235 @@
     }
 
     /**
-     * 
-     * @param {Internal.RecipeComponent[]} data 
-     * @param {string} dataTypeName 
-     * @param {Function} recursiveKeysGetter Getter of all keys that should be considered recursive; expected input: string, expected output: {key: string, isArray: boolean}[]
-     * @param {{id: string, handler: Function}[]} allComplexData 
-     * @param {object} object
-     * @param {number} depth 
-     * @returns {Internal.MappingRecipeComponent}
+     * @param {object} value 
+     * @returns {boolean}
      */
-    ComplexData.recursiveExploration = (data, dataTypeName, recursiveKeysGetter, allComplexData, object, depth) => {
+    ComplexData.isJavaObject = value => {
+        // This is a very crude way of checking, but it is the best I found by default
+        return typeof value === "object" && value.class !== undefined;
+    }
+
+    /**
+     * @description Recursively explores the given object in order to "un-recursive" it, flattening the nest into a simple array
+     * @param {object[]} data Array to which to append found data
+     * @param {any} currentObject The object to explore
+     * @param {object[]} allComplexData Array of all possible types; will be used for validation and datafixing
+     * @param {{class: Internal.Class}[]} allowedClassConstructs Array of all allowed Java classes for this component
+     * @param {number} depth The current depth; will exit early and throw if the recursive algorithm gets too far
+     * @returns {object} currentObject, or perhaps a modified version of it; it's recommended to not discard this
+     */
+    ComplexData.exploreObject = (data, currentObject, allComplexData, allowedClassConstructs, depth) => {
         // Arbitrary depth limit
         if (depth > LycheeSchemaFunctionality.MaxDepth) {
             console.SERVER.error(`Exceeded maximum depth of ${LycheeSchemaFunctionality.MaxDepth}! If you know what you're doing, you can increase it by modifying lychee/register.js. Otherwise, maybe nest less!`);
             throw new Error("Exceeded depth limit");
         }
-
-        if (typeof object !== "object") {
-            console.SERVER.error(`A ${dataTypeName} must be an object`);
-            throw new Error("Invalid type");
+        
+        let isJavaObject = ComplexData.isJavaObject(currentObject);
+        if (isJavaObject || typeof currentObject !== "object") {
+            const data = currentObject;
+            currentObject = {};
+            currentObject[LycheeSchemaFunctionality.Constants.Keys.TYPE] = LycheeSchemaFunctionality.Constants.InternalKeys.PRIMITIVE;
+            currentObject[LycheeSchemaFunctionality.Constants.InternalKeys.DATA] = data;
+        } else {
+            for (const internalKey in LycheeSchemaFunctionality.Constants.InternalKeys) {
+                if (internalKey in currentObject) {
+                    throw new Error("Invalid internal key");
+                } else if (currentObject.type === internalKey) {
+                    throw new Error("Invalid internal type");
+                }
+            }
         }
 
-        let dataIndex = -1;
-        for (let index in allComplexData) {
-            if (allComplexData[index].id === object[LycheeSchemaFunctionality.Constants.Keys.TYPE]) {
-                dataIndex = index;
+        for (const data of allComplexData) {
+            if (data.id === currentObject[LycheeSchemaFunctionality.Constants.Keys.TYPE]) {
+                // Validation, datafixing, and all that jazz
+                currentObject = data.handler(currentObject);
                 break;
             }
         }
 
-        if (dataIndex < 0) {
-            if (LycheeSchemaFunctionality.Constants.Keys.TYPE in object) {
-                console.SERVER.error(`"${object[LycheeSchemaFunctionality.Constants.Keys.TYPE]}" is not a valid ${dataTypeName} type. Must be one of ${ComplexData.listPossibleIDs(allComplexData)}`);
-            } else {
-                console.SERVER.error(`A ${dataTypeName} must have a type, one of ${ComplexData.listPossibleIDs(allComplexData)}`);
-            }
-            throw new Error("Could not find matching data");
+        const parentIndex = data.length;
+        data.push(currentObject);
+
+        if (isJavaObject) {
+            return currentObject;
         }
 
-        const parentIndex = data.length;
-        data.push(object);
+        for (const key in currentObject) {
+            let value = currentObject[key];
 
-        for (let {key, isArray} of recursiveKeysGetter(object[LycheeSchemaFunctionality.Constants.Keys.TYPE])) {
-            if (key in object) {
-                let value = object[key];
-                if (Array.isArray(value)) {
-                    for (let entry of value) {
-                        let o = ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, entry, depth + 1);
-                        o[LycheeSchemaFunctionality.Constants.InternalKeys.PARENT] = parentIndex;
-                        o[LycheeSchemaFunctionality.Constants.InternalKeys.KEY] = key;
-                    }
-                } else {
-                    let o = ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, value, depth + 1);
-                    o[LycheeSchemaFunctionality.Constants.InternalKeys.PARENT] = parentIndex;
-                    o[LycheeSchemaFunctionality.Constants.InternalKeys.KEY] = key;
+            if (Array.isArray(value)) {
+                currentObject[LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE] = true;
+
+                // Numeric loop instead of "of" operator to ensure order remains the same
+                for (let idx = 0; idx < value.length; idx++) {
+                    // Operate on primitives as well, and denote them accordingly
+                    let objectifiedEntry = ComplexData.exploreObject(data, value[idx], allComplexData, allowedClassConstructs, depth + 1);
+
+                    objectifiedEntry[LycheeSchemaFunctionality.Constants.InternalKeys.PARENT] = parentIndex;
+                    objectifiedEntry[LycheeSchemaFunctionality.Constants.InternalKeys.KEY] = key;
+                    objectifiedEntry[LycheeSchemaFunctionality.Constants.InternalKeys.FROMARRAY] = true;
                 }
 
-                object[LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE] = true;
+                delete currentObject[key];
+            } else if (typeof value === "object") {
+                // Only operate on nested objects
+                let modifiedValue = ComplexData.exploreObject(data, value, allComplexData, allowedClassConstructs, depth + 1);
+                modifiedValue[LycheeSchemaFunctionality.Constants.InternalKeys.PARENT] = parentIndex;
+                modifiedValue[LycheeSchemaFunctionality.Constants.InternalKeys.KEY] = key;
+                currentObject[LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE] = true;
+
+                delete currentObject[key];
             }
-            object[key] = isArray ? [] : {};
         }
 
-        return allComplexData[dataIndex].handler.call(null, object);
+        return currentObject;
     }
 
     /**
-     * @description Can't use recursive RecipeComponents so the next best solution is storing them in a big array
-     * - Each data will have the key "__parent"
-     * - __parent is set to the index of the object's parent in the generated array
-     * - in mapOut, the format will be reconstructed based on the indices
-     * @param {Function} Component The Convenient Component Helper (TM)
-     * @param {string} dataTypeName Name of the current data type
-     * @param {Function} recursiveKeysGetter Getter of all keys that should be considered recursive; expected input: string, expected output: {key: string, isArray: boolean}[]
-     * @param {Internal.RecipeComponentBuilder} possibleValues All values that the data type may accept
-     * @param {{id: string, handler: Function}[]} allComplexData 
+     * @description Flatten the nest represented by this object into an array
+     * @param {object} value Current object
+     * @param {object[]} allComplexData Array of all possible types; will be used for validation and datafixing
+     * @param {{class: Internal.Class}[]} allowedClassConstructs Array of all allowed Java classes for this component
      */
-    ComplexData.prepareDataArray = (Component, dataTypeName, recursiveKeysGetter, possibleValues, allComplexData) => {
-        const newValues = possibleValues.createCopy();
+    ComplexData.handleObject = (value, allComplexData, allowedClassConstructs) => {
+        // Translate recursion into a simple array
+        const data = [];
+        value = ComplexData.exploreObject(data, value, allComplexData, allowedClassConstructs, 0);
 
-        const anyInt = Component("anyIntNumber");
-        const anyString = Component("anyString");
-        const bool = Component("bool");
+        // Discard first entry, as it's the current object
+        data.shift();
 
-        newValues.add(anyInt.key(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT).defaultOptional());
-        newValues.add(anyString.key(LycheeSchemaFunctionality.Constants.InternalKeys.KEY).defaultOptional());
-        newValues.add(bool.key(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE).defaultOptional());
-        newValues.add(newValues.createCopy().asArray().key(LycheeSchemaFunctionality.Constants.InternalKeys.DATA).defaultOptional());
+        // We've explored the nested data and have judged whether it makes sense to employ this tactic
+        if (value[LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE]) {
+            value[LycheeSchemaFunctionality.Constants.InternalKeys.DATA] = data;
+        }
 
-        const recipeComponent = newValues.mapIn(object => {
-            // Translate recursion into a simple array
-            const data = [];
-            ComplexData.recursiveExploration(data, dataTypeName, recursiveKeysGetter, allComplexData, object, 0);
+        return value;
+    }
 
-            // We've explored the nested data and have judged whether it makes sense to employ this tactic
-            if (object[LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE]) {
-                data.shift(); // Discard first entry, as it's the current object and we don't want a StackOverflow
-                object[LycheeSchemaFunctionality.Constants.InternalKeys.DATA] = data;
+    /**
+     * 
+     * @param {Internal.JsonObject} json 
+     * @returns 
+     */
+    ComplexData.handleJSON = json => {
+        // This object isn't recursive, so don't bother with anything else
+        if (!json.has(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE) || !json.get(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE).getAsBoolean()) {
+            return json;
+        }
+
+        const oldDataElement = json.get(LycheeSchemaFunctionality.Constants.InternalKeys.DATA);
+        const isArray = oldDataElement.isJsonArray();
+        const oldData = isArray ? oldDataElement.getAsJsonArray() : new LycheeSchemaFunctionality.LoadedClasses.$JsonArray();
+        
+        if (!isArray) {
+            oldData["add(com.google.gson.JsonElement)"](oldDataElement.getAsJsonObject());
+        }
+
+        /** @type {Internal.JsonArray} */
+        const data = new LycheeSchemaFunctionality.LoadedClasses.$JsonArray();
+        
+        // Make sure we have the current object at the beginning of this new array for easy access
+        data["add(com.google.gson.JsonElement)"](json);
+        data.addAll(oldData);
+
+        for (const entry of oldData) {
+            if (!entry.has(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT) || !entry.has(LycheeSchemaFunctionality.Constants.InternalKeys.KEY)) {
+                console.SERVER.error(`Internal error: Object ${entry} does not have required data! Report this forward, please`);
+                throw new Error("Invalid object data");
             }
 
-            return object;
-        }).mapOut(/** @param {Internal.JsonObject} json */ json => {
-            if (!json.isJsonObject()) {
-                console.SERVER.error(`Internal error: ${json} is not a JsonObject! Report this forward, please`);
+            let parent = data.get(entry.get(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT).getAsInt());
+            let key = entry.get(LycheeSchemaFunctionality.Constants.InternalKeys.KEY).getAsString();
+
+            if (!parent.isJsonObject()) {
+                console.SERVER.error(`Internal error: Parent ${parent} is not a JsonObject! Report this forward, please`);
                 throw new Error("Invalid object type");
             }
 
-            // This object isn't recursive, so don't bother with anything else
-            if (!json.has(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE) || !json.get(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE).getAsBoolean()) {
-                return json;
+            let parentJSONObject = parent.getAsJsonObject();
+
+            let originatesFromArray = entry.has(LycheeSchemaFunctionality.Constants.InternalKeys.FROMARRAY)
+            && entry.get(LycheeSchemaFunctionality.Constants.InternalKeys.FROMARRAY).getAsBoolean();
+
+            if (originatesFromArray && !parentJSONObject.has(key)) {
+                parentJSONObject.add(key, new LycheeSchemaFunctionality.LoadedClasses.$JsonArray());
             }
 
-            const oldData = json.get(LycheeSchemaFunctionality.Constants.InternalKeys.DATA).getAsJsonArray();
+            entry.remove(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT);
+            entry.remove(LycheeSchemaFunctionality.Constants.InternalKeys.KEY);
+            entry.remove(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE);
+            entry.remove(LycheeSchemaFunctionality.Constants.InternalKeys.FROMARRAY);
 
-            /** @type {Internal.JsonArray} */
-            const data = new LycheeSchemaFunctionality.LoadedClasses.$JsonArray();
-            
-            // Make sure we have the current object at the beginning of this new array for easy access
-            data["add(com.google.gson.JsonElement)"](json);
-            data.addAll(oldData);
+            let isPrimitive = entry.has(LycheeSchemaFunctionality.Constants.Keys.TYPE) && entry.has(LycheeSchemaFunctionality.Constants.InternalKeys.DATA)
+            && entry.get(LycheeSchemaFunctionality.Constants.Keys.TYPE).getAsString() === LycheeSchemaFunctionality.Constants.InternalKeys.PRIMITIVE;
 
-            for (const entry of oldData) {
-                if (entry.has(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT) && entry.has(LycheeSchemaFunctionality.Constants.InternalKeys.KEY)) {
-                    let parent = data.get(entry.get(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT).getAsInt());
-                    let key = entry.get(LycheeSchemaFunctionality.Constants.InternalKeys.KEY).getAsString();
+            let entryData = isPrimitive ? entry.get(LycheeSchemaFunctionality.Constants.InternalKeys.DATA) : entry;
 
-                    if (!parent.isJsonObject()) {
-                        console.SERVER.error(`Internal error: Parent ${parent} is not a JsonObject! Report this forward, please`);
-                        throw new Error("Invalid object type");
-                    }
+            if (originatesFromArray) {
+                let array = parentJSONObject.get(key).getAsJsonArray();
+                array["add(com.google.gson.JsonElement)"](entryData);
+            } else {
+                parentJSONObject.add(key, entryData);
+            }
+        }
 
-                    let parentJSONObject = parent.getAsJsonObject();
-                    let [{isArray}] = recursiveKeysGetter(parentJSONObject.get(LycheeSchemaFunctionality.Constants.Keys.TYPE).getAsString());
+        json.remove(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT);
+        json.remove(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE);
+        json.remove(LycheeSchemaFunctionality.Constants.InternalKeys.DATA);
 
-                    if (isArray && !parentJSONObject.has(key)) {
-                        parentJSONObject.add(key, new LycheeSchemaFunctionality.LoadedClasses.$JsonArray());
-                    }
+        return data.get(0);
+    }
 
-                    entry.remove(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT);
-                    entry.remove(LycheeSchemaFunctionality.Constants.InternalKeys.KEY);
-                    entry.remove(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE);
+    /**
+     * @description Build a recipe component that can accept a (practically infinitely) nested set of objects and arrays
+     * @param {Function} Component The Convenient Component Helper (TM)
+     * @param {object[]} allComplexData Array of all possible types; will be used for validation and datafixing
+     * @param {{class: Internal.Class}[]} allowedClassConstructs Array of all allowed Java classes for this component
+     * @returns {Internal.RecipeComponent} Component with the described functionality
+     */
+    ComplexData.handle = (Component, allComplexData, allowedClassConstructs) => {
+        const anyString = Component("anyString");
+        const anyInt = Component("anyIntNumber");
+        const anyDouble = Component("anyDoubleNumber");
+        const bool = Component("bool");
 
-                    if (isArray) {
-                        parent.get(key).getAsJsonArray()["add(com.google.gson.JsonElement)"](entry); 
-                    } else {
-                        parent.add(key, entry);
-                    }
+        const anyValue = bool.or(anyInt).or(anyDouble).or(anyString);
+
+        const jsonMap = anyValue.asMap(anyString);
+        const component = jsonMap.or(anyValue).asArrayOrSelf().asMap(anyString).asArrayOrSelf();
+
+        return component.map(value => {
+            if (Array.isArray(value)) {
+                // If it's an array, apply nesting algorithm to each separately
+                for (const index in value) {
+                    value[index] = ComplexData.handleObject(value[index], allComplexData, allowedClassConstructs);
                 }
+            } else if (typeof value === "object" && !ComplexData.isJavaObject(value)) {
+                // Otherwise, apply just to this object
+                value = ComplexData.handleObject(value, allComplexData, allowedClassConstructs);
             }
 
-            json.remove(LycheeSchemaFunctionality.Constants.InternalKeys.PARENT);
-            json.remove(LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE);
-            json.remove(LycheeSchemaFunctionality.Constants.InternalKeys.DATA);
+            return value;
+        }, /** @param {Internal.JsonElement} json */ json => {
+            if (json.isJsonObject()) {
+                return ComplexData.handleJSON(json);
+            } else if (json.isJsonArray()) {
+                /** @type {Internal.JsonArray} */
+                let array = json.getAsJsonArray();
+                let newArray = new LycheeSchemaFunctionality.LoadedClasses.$JsonArray();
 
-            return data.get(0);
+                for (const element of array) {
+                    newArray["add(com.google.gson.JsonElement)"](ComplexData.handleJSON(element));
+                }
+
+                return newArray;
+            }
+
+            return json;
         });
-
-        return recipeComponent.asArrayOrSelf();
     }
 
     StartupEvents.init(() => {
