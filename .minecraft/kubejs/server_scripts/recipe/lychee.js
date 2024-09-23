@@ -34,7 +34,7 @@ ServerEvents.recipes(event => {
                                 Count: 1
                             }
                         ]
-                        // CookingTotalTimes: "[100, 0, 0, 0]" // This does not work in object NBT, due to using a special array: [I; 0, 0, 0, 0]. Use the string form instead!
+                        // CookingTotalTimes: [100, 0, 0, 0] // This does not work in object NBT, due to using a special array: [I; 0, 0, 0, 0]. Use the string form instead!
                     }
                     // Alternative form:
                     // nbt: "{Items: [{Slot: 0, id: \"minecraft:porkchop\", Count: 1}], CookingTotalTimes: [I; 100, 0, 0, 0]}" // CookingTotalTimes works here
@@ -87,6 +87,26 @@ ServerEvents.recipes(event => {
         [
             {
                 type: "prevent_default"
+            },
+            {
+                type: "custom",
+                id: "test_action",
+                custom: "property",
+                thisWorks: true,
+                soDoes: [
+                    "this",
+                    2, // "too"
+                    true, "!"
+                ],
+                complexObjectType: {
+                    // be careful of numbers in strings! kubejs limitation as far as i can tell
+                    // (first tries reading as a number, before a string, lest a real number or boolean becomes a string by mistake)
+                    array: [1, 2.351, "3.8", "false", false],
+                    youGetTheGist: true,
+                    nest: {
+                        eggs: 0
+                    }
+                }
             },
             {
                 type: "damage_item",

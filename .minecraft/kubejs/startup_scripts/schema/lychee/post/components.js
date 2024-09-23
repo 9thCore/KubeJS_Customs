@@ -297,6 +297,20 @@
             ["op", "path", "from", "value"]
         ));
 
+        all.push(new LycheeSchemaFunctionality.ComplexData(
+            "custom",
+            (key, value) => {
+                switch (key) {
+                    case "id":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "string", false);
+                    default:
+                        return LycheeSchemaFunctionality.Validators.alwaysTrue();
+                }
+            },
+            LycheeSchemaFunctionality.DataFixers.none,
+            ["id"]
+        ));
+
         return all;
     }
 
