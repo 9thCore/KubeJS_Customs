@@ -86,13 +86,16 @@
             ["id"]
         ));
 
-        /*
         all.push(new LycheeSchemaFunctionality.ComplexData(
             "location",
             (key, value) => {
                 switch (key) {
-                    case "chance":
-                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", false);
+                    case "offsetX":
+                    case "offsetY":
+                    case "offsetZ":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "number", true);
+                    case "predicate":
+                        return LycheeSchemaFunctionality.Validators.type(key, value, "object", false);
                     default:
                         return LycheeSchemaFunctionality.Validators.alwaysTrue();
                 }
@@ -100,7 +103,6 @@
             LycheeSchemaFunctionality.DataFixers.none,
             ["offsetX", "offsetY", "offsetZ", "predicate"]
         ));
-        */
 
         all.push(new LycheeSchemaFunctionality.ComplexData(
             "difficulty",
