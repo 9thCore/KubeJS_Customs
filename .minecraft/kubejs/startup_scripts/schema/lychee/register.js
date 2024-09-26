@@ -9,16 +9,10 @@
     const MAX_DEPTH = 20;
 
     const $RecipeSchema = Java.loadClass("dev.latvian.mods.kubejs.recipe.schema.RecipeSchema");
-    const commonProperties = []; // Set inside of the registry event
 
-    /**
-     * @description Add optional properties which are common to every recipe type
-     * @param {object[]} specificProperties Properties specific for this recipe only (i.e. not any shared properties)
-     * @returns {object[]} specific + global properties
-     */
-    const applyCommonProperties = specificProperties => {
-        return specificProperties.concat(commonProperties);
-    }
+    // Set inside of the registry event
+    let postActions = undefined;
+    const optionalProperties = [];
 
     /**
      * @description Add properties common to all recipe types and register the given schema
@@ -27,7 +21,8 @@
      * @param {object[]} specificProperties Properties specific for this recipe only (i.e. without any shared properties)
      */
     const register = (event, id, specificProperties) => {
-        event.register(id, new $RecipeSchema(applyCommonProperties(specificProperties)));
+        specificProperties.unshift(postActions);
+        event.register(id, new $RecipeSchema(specificProperties.concat(optionalProperties)));
     }
 
     /**
@@ -52,11 +47,19 @@
         const Component = convenientComponentHelper(event);
         const Builder = convenientBuilderHelper(event);
         
-        const itemIn = Component("inputItem").asArrayOrSelf();
-        const itemInKey = itemIn.key("item_in");
+        const itemIn = Component("inputItem");
+        const anyString = Component("anyString");
+        const nonBlankString = Component("nonBlankString");
+        const bool = Component("bool");
+        const positiveInt = Component("intNumber");
 
-        const blockIn = LycheeSchemaFunctionality.Block.BlockPredicate.get(Component, Builder).asArrayOrSelf();
-        const blockInKey = blockIn.key("block_in");
+        const blockIn = LycheeSchemaFunctionality.Block.BlockPredicate.get(Component, Builder);
+        const blockInKey = blockIn.key("block_in").preferred("blockIn");
+        const optionalBlockInKey = blockIn.key("block_in").defaultOptional().preferred("blockIn");
+        const fallingBlockKey = blockIn.key("falling_block").defaultOptional().preferred("fallingBlock");
+        const landingBlockKey = blockIn.key("landing_block").defaultOptional().preferred("landingBlock");
+        const sourceBlockKey = blockIn.key("source_block").preferred("sourceBlock");
+        const targetBlockKey = blockIn.key("target_block").preferred("targetBlock");
 
         // grumble grumble lychee and its stupid quality of life and positive additions...
         const anyItemMatch = Builder(
@@ -83,13 +86,32 @@
             return object;
         });
 
-        const specialItem = emptyHandMatch.or(itemIn.or(anyItemMatch));
-        const specialItemKey = specialItem.key("item_in");
+        const specialItem = emptyHandMatch.or(itemIn.or(anyItemMatch)).asArrayOrSelf();
+        const specialItemKey = specialItem.key("item_in").preferred("itemIn");
+        const optionalSpecialItemKey = specialItem.key("item_in").preferred("itemIn").defaultOptional();
 
-        commonProperties.push(
-            LycheeSchemaFunctionality.PostActions.getKey(Component, Builder),
-            LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder)
+        postActions = LycheeSchemaFunctionality.PostActions.getKey(Component, Builder);        
+        optionalProperties.push(
+            LycheeSchemaFunctionality.ContextualConditions.getKey(Component, Builder),
+            anyString.key("comment").defaultOptional(),
+            bool.key("ghost").defaultOptional(),
+            bool.key("hide_in_viewer").defaultOptional().preferred("hideInViewer"),
+            anyString.key("group").defaultOptional(),
+            positiveInt.key("max_repeats").defaultOptional().preferred("maxRepeats")
         );
+
+        const timeKey = positiveInt.key("time").defaultOptional();
+        const levelCostKey = positiveInt.key("level_cost").preferred("levelCost").defaultOptional();
+        const materialCostKey = positiveInt.key("material_cost").preferred("materialCost").defaultOptional();
+        const assemblingKey = LycheeSchemaFunctionality.PostActions.getAny(Component, Builder).key("assembling").defaultOptional();
+
+        const itemOut = Component("outputItem");
+        const itemOutKey = itemOut.key("item_out").preferred("itemOut");
+        const resultItemKey = itemOut.key("result");
+
+        const character = Component("character");
+        const itemKeysetKey = itemIn.asMap(character).key("key");
+        const patternKey = nonBlankString.asArray().key("pattern");
 
         // Platform-specific conditions
         // Forge's don't seem to be doing anything, perhaps KubeJS' recipes run too late?
@@ -102,11 +124,22 @@
         }
 
         register(event, "lychee:block_interacting", [specialItemKey, blockInKey]);
+        register(event, "lychee:block_clicking", [specialItemKey, blockInKey]);
+        register(event, "lychee:item_burning", [specialItemKey]);
+        register(event, "lychee:item_inside", [specialItemKey, blockInKey, timeKey]);
+        register(event, "lychee:anvil_crafting", [specialItemKey, itemOutKey, levelCostKey, materialCostKey, assemblingKey]);
+        register(event, "lychee:block_crushing", [optionalSpecialItemKey, fallingBlockKey, landingBlockKey]);
+        register(event, "lychee:lightning_channeling", [optionalSpecialItemKey]);
+        register(event, "lychee:item_exploding", [optionalSpecialItemKey]);
+        register(event, "lychee:block_exploding", [optionalBlockInKey]);
+        register(event, "lychee:random_block_ticking", [blockInKey]);
+        register(event, "lychee:dripstone_dripping", [sourceBlockKey, targetBlockKey]);
+        register(event, "lychee:crafting", [patternKey, itemKeysetKey, resultItemKey, assemblingKey]);
     });
 
     StartupEvents.init(() => {
         LycheeSchemaFunctionality.MaxDepth = MAX_DEPTH;
-    })
+    });
 })();
 
 /**

@@ -1,7 +1,5 @@
 ServerEvents.recipes(event => {
     event.recipes.lychee.block_interacting(
-        "minecraft:iron_pickaxe",
-        "#forge:stone",
         [
             {
                 type: "prevent_default"
@@ -48,6 +46,8 @@ ServerEvents.recipes(event => {
                 s: 1
             }
         ],
+        "minecraft:iron_pickaxe",
+        "#forge:stone",
         // Needlessly convoluted to test the system
         {
             type: "or",
@@ -73,17 +73,7 @@ ServerEvents.recipes(event => {
         }
     );
 
-    event.recipes.lychee.block_interacting(
-        "minecraft:stone_hoe",
-        {
-            blocks: ["minecraft:wheat"],
-            state: {
-                age: {
-                    min: 1,
-                    max: 3
-                }
-            }
-        },
+    event.recipes.lychee.block_clicking(
         [
             {
                 type: "prevent_default"
@@ -155,6 +145,119 @@ ServerEvents.recipes(event => {
                     weather: "clear"
                 }
             }
-        ]
+        ],
+        "minecraft:stone_hoe",
+        {
+            blocks: ["minecraft:wheat"],
+            state: {
+                age: {
+                    min: 1,
+                    max: 3
+                }
+            }
+        }
     );
+
+    event.recipes.lychee.item_burning(
+        [
+            {
+                type: "drop_item",
+                item: Item.of("acacia_button", 4)
+            }
+        ],
+        "#minecraft:anvil"
+    );
+
+    event.recipes.lychee.item_inside(
+        {
+            type: "explode",
+            block_interaction: "keep"
+        },
+        "#forge:armors",
+        "minecraft:water",
+        2
+    );
+
+    event.recipes.lychee.anvil_crafting(
+        {
+            type: "place",
+            offsetY: 1,
+            block: "minecraft:light_blue_carpet"
+        },
+        ["minecraft:iron_sword", "minecraft:diamond"],
+        Item.of("minecraft:diamond_sword"),
+        2,
+        4,
+        {
+            type: "hurt",
+            damage: 2
+        }
+    );
+
+    event.recipes.lychee.block_crushing(
+        {
+            type: "drop_item",
+            item: "4x minecraft:stone_pressure_plate"
+        },
+        "minecraft:stone"
+    );
+
+    event.recipes.lychee.lightning_channeling(
+        {
+            type: "execute",
+            command: "weather clear"
+        },
+        "minecraft:copper_ingot"
+    );
+
+    // execute on all exploded items
+    event.recipes.lychee.item_exploding(
+        {
+            type: "drop_item",
+            item: "2x minecraft:firework_rocket"
+        }
+    );
+
+    event.recipes.lychee.block_exploding(
+        {
+            type: "execute",
+            command: "setblock ~ ~ ~ minecraft:sandstone"
+        },
+        "minecraft:sand"
+    );
+
+    event.recipes.lychee.random_block_ticking(
+        {
+            type: "drop_item",
+            item: "minecraft:gunpowder"
+        },
+        "minecraft:oak_log"
+    );
+
+    event.recipes.lychee.dripstone_dripping(
+        {
+            type: "place",
+            block: "wet_sponge"
+        },
+        "minecraft:water",
+        "minecraft:sponge"
+    );
+
+    event.recipes.lychee.crafting(
+        {
+            type: "break" // do nothing on craft
+        },
+        [
+            'aaa',
+            'a a',
+            ' a '
+        ],
+        {
+            a: "minecraft:chest"
+        },
+        "minecraft:chest"
+    ).assembling({
+        type: "hurt",
+        damage: 2
+    });
 });
