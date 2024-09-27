@@ -47,7 +47,8 @@
                     object[countKey] = stack.getCount();
                 }
                 
-                object[itemKey] = object[itemKey].getId();
+                // Make into a JS string or something lol
+                object[itemKey] = "" + object[itemKey].getId();
             } else {
                 const [count, id, pass] = separateCountAndID(object[itemKey]);
 
@@ -102,7 +103,8 @@
         }
 
         if (block.nbt !== undefined) {
-            block.nbt = JsonIO.parseRaw(DataFixers.nbt(block.nbt)).toString();
+            // Make into a JS string or something lol
+            block.nbt = "" + JsonIO.parseRaw(DataFixers.nbt(block.nbt));
         }
 
         return block;

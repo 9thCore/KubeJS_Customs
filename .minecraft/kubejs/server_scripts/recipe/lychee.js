@@ -89,14 +89,15 @@ ServerEvents.recipes(event => {
                     true, "!"
                 ],
                 complexObjectType: {
-                    // be careful of numbers in strings! kubejs limitation as far as i can tell
-                    // (first tries reading as a number, before a string, lest a real number or boolean becomes a string by mistake)
+                    // be careful of numbers in strings! they will become normal numbers, kubejs limitation as far as i can tell
+                    // (first tries reading as a number, before a string, lest a real number becomes a string by mistake)
                     array: [1, 2.351, "3.8", "false", false],
                     youGetTheGist: true,
                     nest: {
                         eggs: 0
                     }
-                }
+                },
+                class: "first-class"
             },
             {
                 type: "damage_item",

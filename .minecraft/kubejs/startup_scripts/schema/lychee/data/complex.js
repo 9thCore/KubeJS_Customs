@@ -48,12 +48,34 @@
     }
 
     /**
-     * @param {object} value 
+     * @description
+     * Checks if the given object is a real class
+     * 
+     * Not foolproof, but should be good enough
+     * for most usecases
+     * 
+     * (Any issues are probably from trying to
+     * break the schema ahaha)
+     * @param {{toString(): string}} value 
      * @returns {boolean}
      */
-    ComplexData.isJavaObject = value => {
-        // This is a very crude way of checking, but it is the best I found by default
-        return typeof value === "object" && value.class !== undefined;
+    ComplexData.isJavaClass = value => {
+        if (typeof value !== "object" || typeof value.toString !== "function") {
+            // Classes must be objects and must have the toString method
+            return false;
+        }
+
+        /** @type {String} */
+        let stringRepresentation = value.toString();
+
+        // Shallow check, but should be good enough
+        // Classes, when toString()'d, return a string of the format
+        // class canonical.path.to.class
+        if (stringRepresentation.startsWith("class ")) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -72,8 +94,7 @@
             throw new Error("Exceeded depth limit");
         }
         
-        let isJavaObject = ComplexData.isJavaObject(currentObject);
-        if (isJavaObject || typeof currentObject !== "object") {
+        if (typeof currentObject !== "object") {
             const data = currentObject;
             currentObject = {};
             currentObject[LycheeSchemaFunctionality.Constants.Keys.TYPE] = LycheeSchemaFunctionality.Constants.InternalKeys.PRIMITIVE;
@@ -99,12 +120,15 @@
         const parentIndex = data.length;
         data.push(currentObject);
 
-        if (isJavaObject) {
-            return currentObject;
-        }
-
         for (const key in currentObject) {
             let value = currentObject[key];
+            
+            if (key === "class") {
+                if(ComplexData.isJavaClass(value)) {
+                    console.SERVER.error(`Cannot use Java objects in schema`);
+                    throw new Error("Invalid object - reserved key");
+                }
+            }
 
             if (Array.isArray(value)) {
                 currentObject[LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE] = true;
@@ -254,7 +278,7 @@
                 for (const index in value) {
                     value[index] = ComplexData.handleObject(value[index], allComplexData, allowedClassConstructs);
                 }
-            } else if (typeof value === "object" && !ComplexData.isJavaObject(value)) {
+            } else if (typeof value === "object") {
                 // Otherwise, apply just to this object
                 value = ComplexData.handleObject(value, allComplexData, allowedClassConstructs);
             }
