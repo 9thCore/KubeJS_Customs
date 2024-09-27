@@ -83,11 +83,10 @@
      * @param {object[]} data Array to which to append found data
      * @param {any} currentObject The object to explore
      * @param {object[]} allComplexData Array of all possible types; will be used for validation and datafixing
-     * @param {{class: Internal.Class}[]} allowedClassConstructs Array of all allowed Java classes for this component
      * @param {number} depth The current depth; will exit early and throw if the recursive algorithm gets too far
      * @returns {object} currentObject, or perhaps a modified version of it; it's recommended to not discard this
      */
-    ComplexData.exploreObject = (data, currentObject, allComplexData, allowedClassConstructs, depth) => {
+    ComplexData.exploreObject = (data, currentObject, allComplexData, depth) => {
         // Arbitrary depth limit
         if (depth > LycheeSchemaFunctionality.MaxDepth) {
             console.SERVER.error(`Exceeded maximum depth of ${LycheeSchemaFunctionality.MaxDepth}! If you know what you're doing, you can increase it by modifying lychee/register.js. Otherwise, maybe nest less!`);
@@ -136,7 +135,7 @@
                 // Numeric loop instead of "of" operator to ensure order remains the same
                 for (let idx = 0; idx < value.length; idx++) {
                     // Operate on primitives as well, and denote them accordingly
-                    let objectifiedEntry = ComplexData.exploreObject(data, value[idx], allComplexData, allowedClassConstructs, depth + 1);
+                    let objectifiedEntry = ComplexData.exploreObject(data, value[idx], allComplexData, depth + 1);
 
                     objectifiedEntry[LycheeSchemaFunctionality.Constants.InternalKeys.PARENT] = parentIndex;
                     objectifiedEntry[LycheeSchemaFunctionality.Constants.InternalKeys.KEY] = key;
@@ -146,7 +145,7 @@
                 delete currentObject[key];
             } else if (typeof value === "object") {
                 // Only operate on nested objects
-                let modifiedValue = ComplexData.exploreObject(data, value, allComplexData, allowedClassConstructs, depth + 1);
+                let modifiedValue = ComplexData.exploreObject(data, value, allComplexData, depth + 1);
                 modifiedValue[LycheeSchemaFunctionality.Constants.InternalKeys.PARENT] = parentIndex;
                 modifiedValue[LycheeSchemaFunctionality.Constants.InternalKeys.KEY] = key;
                 currentObject[LycheeSchemaFunctionality.Constants.InternalKeys.ISRECURSIVE] = true;
@@ -162,12 +161,11 @@
      * @description Flatten the nest represented by this object into an array
      * @param {object} value Current object
      * @param {object[]} allComplexData Array of all possible types; will be used for validation and datafixing
-     * @param {{class: Internal.Class}[]} allowedClassConstructs Array of all allowed Java classes for this component
      */
-    ComplexData.handleObject = (value, allComplexData, allowedClassConstructs) => {
+    ComplexData.handleObject = (value, allComplexData) => {
         // Translate recursion into a simple array
         const data = [];
-        value = ComplexData.exploreObject(data, value, allComplexData, allowedClassConstructs, 0);
+        value = ComplexData.exploreObject(data, value, allComplexData, 0);
 
         // Discard first entry, as it's the current object
         data.shift();
