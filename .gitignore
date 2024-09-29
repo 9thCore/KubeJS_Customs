@@ -19,3 +19,4 @@ instance.cfg*
 probejs.json
 .minecraft/kubejs/README.txt
 jsconfig.json
+*.zip
