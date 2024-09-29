@@ -1,2 +1,2 @@
-# KubeJS_Schemas
- Various(?) recipe schemas for use in KubeJS scripts
+# KubeJS_Customs
+ Hosting site for custom KubeJS scripts, from schemas to just utilities.
