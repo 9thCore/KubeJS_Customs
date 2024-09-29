@@ -1,3 +1,9 @@
+/**
+ * Lychee recipe schema, 1.20.1
+ * Version: 1.0.0
+ * Forge (& Fabric probably)
+ */
+
 (function() {
     /**
      * Maximum depth that searches can go for.
