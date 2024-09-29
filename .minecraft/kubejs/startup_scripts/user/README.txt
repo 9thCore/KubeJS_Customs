@@ -1,3 +1,3 @@
-Working space for tests regarding addons for mods with KubeJS integration.
+Working space for tests regarding scripts.
 
-These are not vital for the addons themselves.
+These are not vital for the scripts themselves, and are but examples.
