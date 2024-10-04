@@ -1,6 +1,6 @@
 {
     "author": "9thCore",
-    "description": "Bundle of scripts that offer Lychee schema support, with limited ProbeJS output",
+    "description": "Bundle of scripts that offer Lychee schema support, with (limited) ProbeJS output",
     
     "versions": ["1.20.1"],
     "modloaders": ["forge", "fabric"],
