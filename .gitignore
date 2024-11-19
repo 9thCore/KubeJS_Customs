@@ -26,4 +26,4 @@ kubejs/*/README.txt
 jsconfig.json
 *.zip
 !kubejs/*
-!kubejs-packages/*/
+!kubejs-packages/*/*/
