@@ -22,6 +22,8 @@ shaderpacks
 texturepacks
 *.properties
 probejs.json
-kubejs/README.txt
+kubejs/*/README.txt
 jsconfig.json
 *.zip
+!kubejs/*
+!kubejs-packages/*/
